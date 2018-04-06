@@ -1,3 +1,24 @@
+liburcu (0.10.1-2~ubuntu16.04.1) xenial; urgency=medium
+
+  [ Michael Jeanson ]
+  * [37402ed] Remove debian/files from git
+  * [0adcc02] New upstream version 0.10.1
+  * [c0f1c97] Changed deprecated extra priority to optional
+  * [050b111] Switched my uploader email to @debian.org
+  * [2804cb8] Move git to salsa.debian.org
+  * [298de62] Fix debian-rules-sets-dpkg-architecture-variable
+  * [e48d4f7] Use https in watch file
+  * [02a4e3a] Bump standards version to 4.1.3, no changes necessary
+
+  [ Cyril Brulebois ]
+  * [e46839c] Add a liburcu6 udeb, needed by multipath-udeb (See: #885556).
+
+  [ Michael Jeanson ]
+  * [b55c3f1] Drop m68k patch merged upstream
+  * [314c5b0] Enable riscv64 architecture using gcc atomic
+
+ -- Michael Jeanson <mjeanson@debian.org>  Fri, 06 Apr 2018 14:44:38 -0400
+
 liburcu (0.10.0-2~xenial2) xenial; urgency=medium
 
   * Source backport to xenial
