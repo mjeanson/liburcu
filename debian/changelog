@@ -1,3 +1,23 @@
+liburcu (0.10.1-2~ubuntu14.04.1) trusty; urgency=medium
+
+  [ Michael Jeanson ]
+  * [0adcc02] New upstream version 0.10.1
+  * [d48da3d] Changed deprecated extra priority to optional
+  * [8f745fa] Switched my uploader email to @debian.org
+  * [e3e84ff] Move git to salsa.debian.org
+  * [fa03e7b] Fix debian-rules-sets-dpkg-architecture-variable
+  * [6e591cf] Use https in watch file
+  * [0d9331a] Bump standards version to 4.1.3, no changes necessary
+
+  [ Cyril Brulebois ]
+  * [03d648d] Add a liburcu6 udeb, needed by multipath-udeb (See: #885556).
+
+  [ Michael Jeanson ]
+  * [5251cbc] Drop m68k patch merged upstream
+  * [2ccdeee] Enable riscv64 architecture using gcc atomic
+
+ -- Michael Jeanson <mjeanson@debian.org>  Fri, 06 Apr 2018 14:34:05 -0400
+
 liburcu (0.10.0-2~trusty2) trusty; urgency=medium
 
   * Source backport to trusty
