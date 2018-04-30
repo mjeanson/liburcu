@@ -1,3 +1,9 @@
+liburcu (0.10.1-2~ubuntu14.04.2) trusty; urgency=medium
+
+  * Rebuild for new ppa architectures.
+
+ -- Michael Jeanson <mjeanson@debian.org>  Mon, 30 Apr 2018 17:03:36 -0400
+
 liburcu (0.10.1-2~ubuntu14.04.1) trusty; urgency=medium
 
   [ Michael Jeanson ]
