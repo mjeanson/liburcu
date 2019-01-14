@@ -27,9 +27,6 @@ override_dh_auto_configure:
 		--includedir=/usr/include/$(DEB_HOST_MULTIARCH) \
 		$(ADD_CONFIG_FLAGS)
 
-override_dh_auto_build:
-	dh_auto_build -- V=1
-
 override_dh_makeshlibs:
 	dh_makeshlibs -V --add-udeb=liburcu6-udeb
 
