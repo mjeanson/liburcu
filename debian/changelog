@@ -1,3 +1,13 @@
+liburcu (0.10.2-1) unstable; urgency=medium
+
+  * [c877604] New upstream version 0.10.2
+  * [04724a7] Use salsa canonical uri in VCS-Browser
+  * [988dc12] Add Build-Depends-Package to symbols file
+  * [5cc568e] Bump debhelper compat to 10
+  * [9b32b56] Bump standards version to 4.3.0
+
+ -- Michael Jeanson <mjeanson@debian.org>  Mon, 14 Jan 2019 15:59:50 -0500
+
 liburcu (0.10.1-2) unstable; urgency=medium
 
   * [23e7f63] Enable riscv64 architecture using gcc atomic
