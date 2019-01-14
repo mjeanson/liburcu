@@ -48,7 +48,11 @@ struct test_array {
 	int a;
 };
 
-pthread_rwlock_t lock = PTHREAD_RWLOCK_INITIALIZER;
+/*
+ * static rwlock initializer is broken on Cygwin. Use runtime
+ * initialization.
+ */
+pthread_rwlock_t lock;
 
 static volatile int test_go, test_stop;
 
@@ -173,22 +177,34 @@ void *thr_reader(void *_count)
 	}
 
 	for (;;) {
-		int a;
+		int a, ret;
 
-		pthread_rwlock_rdlock(&lock);
+		ret = pthread_rwlock_rdlock(&lock);
+		if (ret) {
+			fprintf(stderr, "reader pthread_rwlock_rdlock: %s\n", strerror(ret));
+			abort();
+		}
+
 		a = test_array.a;
 		assert(a == 8);
 		if (caa_unlikely(rduration))
 			loop_sleep(rduration);
-		pthread_rwlock_unlock(&lock);
+
+		ret = pthread_rwlock_unlock(&lock);
+		if (ret) {
+			fprintf(stderr, "reader pthread_rwlock_unlock: %s\n", strerror(ret));
+			abort();
+		}
+
 		URCU_TLS(nr_reads)++;
 		if (caa_unlikely(!test_duration_read()))
 			break;
 	}
 
 	*count = URCU_TLS(nr_reads);
-	printf_verbose("thread_end %s, tid %lu\n",
-			"reader", urcu_get_thread_id());
+
+	printf_verbose("thread_end %s, tid %lu, count %llu\n",
+			"reader", urcu_get_thread_id(), *count);
 	return ((void*)1);
 
 }
@@ -208,22 +224,35 @@ void *thr_writer(void *_count)
 	cmm_smp_mb();
 
 	for (;;) {
-		pthread_rwlock_wrlock(&lock);
+		int ret;
+
+		ret = pthread_rwlock_wrlock(&lock);
+		if (ret) {
+			fprintf(stderr, "writer pthread_rwlock_wrlock: %s\n", strerror(ret));
+			abort();
+		}
+
 		test_array.a = 0;
 		test_array.a = 8;
 		if (caa_unlikely(wduration))
 			loop_sleep(wduration);
-		pthread_rwlock_unlock(&lock);
+
+		ret = pthread_rwlock_unlock(&lock);
+		if (ret) {
+			fprintf(stderr, "writer pthread_rwlock_unlock: %s\n", strerror(ret));
+			abort();
+		}
+
 		URCU_TLS(nr_writes)++;
 		if (caa_unlikely(!test_duration_write()))
 			break;
 		if (caa_unlikely(wdelay))
 			loop_sleep(wdelay);
 	}
-
-	printf_verbose("thread_end %s, tid %lu\n",
-			"writer", urcu_get_thread_id());
 	*count = URCU_TLS(nr_writes);
+
+	printf_verbose("thread_end %s, tid %lu, count %llu\n",
+			"writer", urcu_get_thread_id(), *count);
 	return ((void*)2);
 }
 
@@ -317,9 +346,16 @@ int main(int argc, char **argv)
 	printf_verbose("running test for %lu seconds, %u readers, %u writers.\n",
 		duration, nr_readers, nr_writers);
 	printf_verbose("Writer delay : %lu loops.\n", wdelay);
+	printf_verbose("Writer duration : %lu loops.\n", wduration);
 	printf_verbose("Reader duration : %lu loops.\n", rduration);
 	printf_verbose("thread %-6s, tid %lu\n",
 			"main", urcu_get_thread_id());
+
+	err = pthread_rwlock_init(&lock, NULL);
+	if (err != 0) {
+		fprintf(stderr, "pthread_rwlock_init: (%d) %s\n", err, strerror(err));
+		exit(1);
+	}
 
 	tid_reader = calloc(nr_readers, sizeof(*tid_reader));
 	tid_writer = calloc(nr_writers, sizeof(*tid_writer));
@@ -371,6 +407,11 @@ int main(int argc, char **argv)
 		nr_writers, wdelay, tot_reads, tot_writes,
 		tot_reads + tot_writes);
 
+	err = pthread_rwlock_destroy(&lock);
+	if (err != 0) {
+		fprintf(stderr, "pthread_rwlock_destroy: (%d) %s\n", err, strerror(err));
+		exit(1);
+	}
 	free(tid_reader);
 	free(tid_writer);
 	free(count_reader);
