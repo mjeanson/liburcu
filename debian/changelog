@@ -1,3 +1,9 @@
+liburcu (0.10.2-1~ubuntu16.04.1) xenial; urgency=medium
+
+  * [c877604] New upstream version 0.10.2
+
+ -- Michael Jeanson <mjeanson@debian.org>  Tue, 12 Mar 2019 16:23:17 -0400
+
 liburcu (0.10.1-2~ubuntu16.04.2) xenial; urgency=medium
 
   * Rebuild for new ppa architectures.
