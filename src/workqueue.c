@@ -37,7 +37,6 @@
 
 #include "compat-getcpu.h"
 #include "urcu/wfcqueue.h"
-#include "urcu-call-rcu.h"
 #include "urcu-pointer.h"
 #include "urcu/list.h"
 #include "urcu/futex.h"
@@ -55,10 +54,9 @@
 struct urcu_workqueue {
 	/*
 	 * We do not align head on a different cache-line than tail
-	 * mainly because call_rcu callback-invocation threads use
-	 * batching ("splice") to get an entire list of callbacks, which
-	 * effectively empties the queue, and requires to touch the tail
-	 * anyway.
+	 * mainly because workqueue threads use batching ("splice") to
+	 * get an entire list of callbacks, which effectively empties
+	 * the queue, and requires to touch the tail anyway.
 	 */
 	struct cds_wfcq_tail cbs_tail;
 	struct cds_wfcq_head cbs_head;
@@ -223,11 +221,11 @@ static void *workqueue_thread(void *arg)
 			cbcount = 0;
 			__cds_wfcq_for_each_blocking_safe(&cbs_tmp_head,
 					&cbs_tmp_tail, cbs, cbs_tmp_n) {
-				struct rcu_head *rhp;
+				struct urcu_work *uwp;
 
-				rhp = caa_container_of(cbs,
-					struct rcu_head, next);
-				rhp->func(rhp);
+				uwp = caa_container_of(cbs,
+					struct urcu_work, next);
+				uwp->func(uwp);
 				cbcount++;
 			}
 			uatomic_sub(&workqueue->qlen, cbcount);
@@ -240,25 +238,25 @@ static void *workqueue_thread(void *arg)
 			if (cds_wfcq_empty(&workqueue->cbs_head,
 					&workqueue->cbs_tail)) {
 				futex_wait(&workqueue->futex);
-				(void) poll(NULL, 0, 10);
 				uatomic_dec(&workqueue->futex);
 				/*
 				 * Decrement futex before reading
-				 * call_rcu list.
+				 * urcu_work list.
 				 */
 				cmm_smp_mb();
-			} else {
-				(void) poll(NULL, 0, 10);
 			}
 		} else {
-			(void) poll(NULL, 0, 10);
+			if (cds_wfcq_empty(&workqueue->cbs_head,
+					&workqueue->cbs_tail)) {
+				(void) poll(NULL, 0, 10);
+			}
 		}
 		if (workqueue->worker_after_wake_up_fct)
 			workqueue->worker_after_wake_up_fct(workqueue, workqueue->priv);
 	}
 	if (!rt) {
 		/*
-		 * Read call_rcu list before write futex.
+		 * Read urcu_work list before write futex.
 		 */
 		cmm_smp_mb();
 		uatomic_set(&workqueue->futex, 0);
@@ -309,7 +307,7 @@ struct urcu_workqueue *urcu_workqueue_create(unsigned long flags,
 
 static void wake_worker_thread(struct urcu_workqueue *workqueue)
 {
-	if (!(_CMM_LOAD_SHARED(workqueue->flags) & URCU_CALL_RCU_RT))
+	if (!(_CMM_LOAD_SHARED(workqueue->flags) & URCU_WORKQUEUE_RT))
 		futex_wake_up(&workqueue->futex);
 }
 
