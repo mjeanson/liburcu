@@ -1,3 +1,9 @@
+liburcu (0.10.2-1~ubuntu14.04.1) trusty; urgency=medium
+
+  * [c877604] New upstream version 0.10.2
+
+ -- Michael Jeanson <mjeanson@debian.org>  Tue, 12 Mar 2019 16:25:31 -0400
+
 liburcu (0.10.1-2~ubuntu14.04.2) trusty; urgency=medium
 
   * Rebuild for new ppa architectures.
