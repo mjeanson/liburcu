@@ -1,3 +1,9 @@
+liburcu (0.10.2-1~ubuntu18.04.1) bionic; urgency=medium
+
+  * [92745ee] Update gbp.conf for bionic
+
+ -- Michael Jeanson <mjeanson@debian.org>  Tue, 12 Mar 2019 16:13:20 -0400
+
 liburcu (0.10.2-1) unstable; urgency=medium
 
   * [c877604] New upstream version 0.10.2
