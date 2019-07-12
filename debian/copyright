@@ -1,17 +1,22 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 
 Files: *
-Copyright: 2009, 2010, Paul E. McKenney, IBM Corporation
-  2009-2015, Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+Copyright: 2009-2015, Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+  2009, 2010, Paul E. McKenney, IBM Corporation
 License: LGPL-2.1+
 
 Files: config/*
-Copyright: 1996-2013, Free Software Foundation, Inc.
+Copyright: 1996-2015, Free Software Foundation, Inc.
 License: GPL-2+
 
+Files: configure
+Copyright: 1992-1996, 1998-2012, Free Software Foundation, Inc.
+License: FSFUL
+ Please fill license FSFUL from header of configure
+
 Files: debian/*
-Copyright: 2009-2015, Jon Bernard <jbernard@debian.org>
- 2014-2017, Michael Jeanson <mjeanson@ubuntu.com>
+Copyright: 2014-2017, Michael Jeanson <mjeanson@ubuntu.com>
+  2009-2015, Jon Bernard <jbernard@debian.org>
 License: GPL-3+
 
 Files: doc/examples/*
@@ -23,10 +28,6 @@ Copyright: 2009-2012, - Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 License: MIT-MINIMAL
 
 Files: include/urcu/*
-Copyright: 2010, Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
-License: LGPL-2.1+
-
-Files: include/urcu/arch/*
 Copyright: 2009, 2010, Paul E. McKenney, IBM Corporation.
   2009-2015, 2017, Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
 License: LGPL-2.1+
@@ -38,6 +39,11 @@ License: LGPL-2.1+
 
 Files: include/urcu/arch/hppa.h
 Copyright: 2014, Helge Deller <deller@gmx.de>
+License: LGPL-2.1+
+
+Files: include/urcu/arch/m68k.h
+  include/urcu/arch/riscv.h
+Copyright: 2015, 2017, 2018, Michael Jeanson <mjeanson@efficios.com>
 License: LGPL-2.1+
 
 Files: include/urcu/arch/mips.h
@@ -63,6 +69,18 @@ Files: include/urcu/compiler.h
 Copyright: 2009, 2015, Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
 License: Expat
 
+Files: include/urcu/config.h.in
+  include/urcu/uatomic_arch.h
+  include/urcu/urcu-futex.h
+  include/urcu/urcu-qsbr.h
+  include/urcu/urcu_ref.h
+Copyright: 2010, Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+License: LGPL-2.1+
+
+Files: include/urcu/flavor.h
+Copyright: 2011, Lai Jiangshan <laijs@cn.fujitsu.com>
+License: LGPL-2.1+
+
 Files: include/urcu/futex.h
 Copyright: 2011-2012, - Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
 License: LGPL-2.1+
@@ -86,11 +104,6 @@ Copyright: 2010, Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
   2002, Free Software Foundation, Inc.
 License: LGPL-2.1+
 
-Files: include/urcu/map/*
-Copyright: 2009, 2010, Paul E. McKenney, IBM Corporation.
-  2009-2015, 2017, Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
-License: LGPL-2.1+
-
 Files: include/urcu/rculfhash.h
 Copyright: 2011, - Mathieu Desnoyers <mathieu.desnoyers@efficios.com> / 2011, - Lai Jiangshan <laijs@cn.fujitsu.com>
 License: LGPL-2.1+
@@ -99,11 +112,6 @@ Files: include/urcu/rculfqueue.h
   include/urcu/rculfstack.h
   include/urcu/wfqueue.h
 Copyright: 2010, - Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
-License: LGPL-2.1+
-
-Files: include/urcu/static/*
-Copyright: 2009, 2010, Paul E. McKenney, IBM Corporation.
-  2009-2015, 2017, Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
 License: LGPL-2.1+
 
 Files: include/urcu/static/lfstack.h
@@ -158,6 +166,11 @@ Copyright: 2010, Paul E. McKenney, IBM Corporation
   1991-1994, Xerox Corporation.
 License: MIT-MINIMAL
 
+Files: include/urcu/uatomic/m68k.h
+  include/urcu/uatomic/riscv.h
+Copyright: 2017, 2018, Michael Jeanson <mjeanson@efficios.com>
+License: Expat
+
 Files: include/urcu/uatomic/nios2.h
 Copyright: 2016, Marek Vasut <marex@denx.de>
 License: Expat
@@ -187,7 +200,7 @@ Copyright: 2011-2012, - Lai Jiangshan <laijs@cn.fujitsu.com> / 2010-2012, - Math
 License: LGPL-2.1+
 
 Files: m4/*
-Copyright: 1989, 1991, 1994-2013, Free Software Foundation, Inc.
+Copyright: 1994-2015, Free Software Foundation, Inc.
 License: LGPL-2.1+
 
 Files: m4/ax_c___attribute__.m4
@@ -206,24 +219,21 @@ Copyright: 2010, Diego Elio Petteno` <flameeyes@gmail.com>
   2008, Alan Woodland <ajw05@aber.ac.uk>
 License: GPL-3+
 
-Files: src/*
-Copyright: 2009, 2010, Paul E. McKenney, IBM Corporation.
-  2009-2015, 2017, Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+Files: m4/libtool.m4
+Copyright: 1996-2001, 2003-2015, Free Software Foundation, Inc.
+License: GPL-2+
+
+Files: m4/ltoptions.m4
+Copyright: 2004, 2005, 2007-2009, 2011-2015, Free Software
 License: LGPL-2.1+
 
-Files: src/Makefile.am
-  src/liburcu-bp.pc.in
-  src/liburcu-cds.pc.in
-  src/liburcu-mb.pc.in
-  src/liburcu-qsbr.pc.in
-  src/liburcu-signal.pc.in
-  src/liburcu.pc.in
-Copyright: 2009, 2010, Paul E. McKenney, IBM Corporation
-  2009-2015, Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+Files: m4/pprint.m4
+Copyright: 1989, 1991, 1994-2013, Free Software Foundation, Inc.
 License: LGPL-2.1+
 
 Files: src/compat-getcpu.h
-Copyright: 2015, Michael Jeanson <mjeanson@efficios.com>
+  src/urcu-utils.h
+Copyright: 2015, 2017, 2018, Michael Jeanson <mjeanson@efficios.com>
 License: LGPL-2.1+
 
 Files: src/compat-rand.h
@@ -260,6 +270,16 @@ Files: src/rculfqueue.c
 Copyright: 2010, - Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
 License: LGPL-2.1+
 
+Files: src/urcu-bp.c
+  src/urcu-defer-impl.h
+  src/urcu-pointer.c
+  src/urcu-qsbr.c
+  src/urcu.c
+  src/workqueue.h
+Copyright: 2009, 2010, Paul E. McKenney, IBM Corporation.
+  2009-2015, 2017, Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+License: LGPL-2.1+
+
 Files: src/urcu-call-rcu-impl.h
 Copyright: 2010, Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 License: LGPL-2.1+
@@ -267,14 +287,6 @@ License: LGPL-2.1+
 Files: src/urcu-die.h
   src/urcu-wait.h
 Copyright: 2012, Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
-License: LGPL-2.1+
-
-Files: src/urcu-flavor.h
-Copyright: 2011, Lai Jiangshan <laijs@cn.fujitsu.com>
-License: LGPL-2.1+
-
-Files: src/urcu-qsbr.h
-Copyright: no-info-found
 License: LGPL-2.1+
 
 Files: src/wfcqueue.c
@@ -291,30 +303,23 @@ Copyright: 2013, Christian Babeux <christian.babeux@efficios.com>
 License: GPL-2
 
 Files: tests/benchmark/*
-Copyright: February 2009, Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+Copyright: February 2009, - Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
 License: GPL-2+
 
-Files: tests/benchmark/run.sh
-Copyright: 2013, - Christian Babeux <christian.babeux@efficios.com>
-License: GPL-2
-
-Files: tests/benchmark/test_cycles_per_loop.c
-  tests/benchmark/test_looplen.c
-  tests/benchmark/test_mutex.c
-  tests/benchmark/test_perthreadlock.c
-  tests/benchmark/test_perthreadlock_timing.c
-  tests/benchmark/test_rwlock.c
-  tests/benchmark/test_rwlock_timing.c
-  tests/benchmark/test_urcu.c
-  tests/benchmark/test_urcu_assign.c
-  tests/benchmark/test_urcu_bp.c
-  tests/benchmark/test_urcu_defer.c
-  tests/benchmark/test_urcu_gc.c
-  tests/benchmark/test_urcu_qsbr.c
-  tests/benchmark/test_urcu_qsbr_gc.c
-  tests/benchmark/test_urcu_qsbr_timing.c
-  tests/benchmark/test_urcu_timing.c
-Copyright: February 2009, - Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+Files: tests/benchmark/common.sh
+  tests/benchmark/run-urcu-tests.sh
+  tests/benchmark/runhash.sh
+  tests/benchmark/runpaul-phase1.sh
+  tests/benchmark/runpaul-phase2.sh
+  tests/benchmark/runpaul-phase3.sh
+  tests/benchmark/runpaul-phase4.sh
+  tests/benchmark/runpaul-phase5.sh
+  tests/benchmark/runpaul-phase6.sh
+  tests/benchmark/runpaul-phase7.sh
+  tests/benchmark/runtests-batch.sh
+  tests/benchmark/runtests.sh
+  tests/benchmark/subphase4.sh
+Copyright: February 2009, Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
 License: GPL-2+
 
 Files: tests/benchmark/test_urcu_hash.c
@@ -357,10 +362,6 @@ Files: tests/regression/rcutorture.h
 Copyright: no-info-found
 License: GPL-2+
 
-Files: tests/regression/run.sh
-Copyright: 2013, - Christian Babeux <christian.babeux@efficios.com>
-License: GPL-2
-
 Files: tests/regression/test_urcu_fork.c
 Copyright: February 2012, - Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
 License: GPL-2+
@@ -368,15 +369,6 @@ License: GPL-2+
 Files: tests/unit/*
 Copyright: February 2012, - Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
 License: GPL-2+
-
-Files: tests/unit/test_loop
-  tests/unit/unit_tests
-Copyright: February 2012, Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
-License: GPL-2+
-
-Files: tests/unit/run.sh
-Copyright: 2013, - Christian Babeux <christian.babeux@efficios.com>
-License: GPL-2
 
 Files: tests/unit/test_uatomic.c
 Copyright: February 2009, - Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
