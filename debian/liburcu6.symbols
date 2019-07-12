@@ -46,7 +46,46 @@ liburcu-bp.so.6 liburcu6 #MINVER#
  set_cpu_call_rcu_data_bp@Base 0.10.0
  set_thread_call_rcu_data_bp@Base 0.10.0
  synchronize_rcu_bp@Base 0.10.0
+ urcu_bp_after_fork_child@Base 0.11.1
+ urcu_bp_after_fork_parent@Base 0.11.1
+ urcu_bp_barrier@Base 0.11.1
+ urcu_bp_before_fork@Base 0.11.1
+ urcu_bp_call_rcu@Base 0.11.1
+ urcu_bp_call_rcu_after_fork_child@Base 0.11.1
+ urcu_bp_call_rcu_after_fork_parent@Base 0.11.1
+ urcu_bp_call_rcu_before_fork@Base 0.11.1
+ urcu_bp_call_rcu_data_free@Base 0.11.1
+ urcu_bp_cmpxchg_pointer_sym@Base 0.11.1
+ urcu_bp_create_all_cpu_call_rcu_data@Base 0.11.1
+ urcu_bp_create_call_rcu_data@Base 0.11.1
+ urcu_bp_defer_barrier@Base 0.11.1
+ urcu_bp_defer_barrier_thread@Base 0.11.1
+ urcu_bp_defer_exit@Base 0.11.1
+ urcu_bp_defer_rcu@Base 0.11.1
+ urcu_bp_defer_register_thread@Base 0.11.1
+ urcu_bp_defer_unregister_thread@Base 0.11.1
+ urcu_bp_dereference_sym@Base 0.11.1
+ urcu_bp_flavor@Base 0.11.1
+ urcu_bp_free_all_cpu_call_rcu_data@Base 0.11.1
+ urcu_bp_get_call_rcu_data@Base 0.11.1
+ urcu_bp_get_call_rcu_thread@Base 0.11.1
+ urcu_bp_get_cpu_call_rcu_data@Base 0.11.1
+ urcu_bp_get_default_call_rcu_data@Base 0.11.1
+ urcu_bp_get_thread_call_rcu_data@Base 0.11.1
+ urcu_bp_gp@Base 0.11.1
  urcu_bp_has_sys_membarrier@Base 0.10.0
+ urcu_bp_read_lock@Base 0.11.1
+ urcu_bp_read_ongoing@Base 0.11.1
+ urcu_bp_read_unlock@Base 0.11.1
+ urcu_bp_reader@Base 0.11.1
+ urcu_bp_register@Base 0.11.1
+ urcu_bp_register_rculfhash_atfork@Base 0.11.1
+ urcu_bp_set_cpu_call_rcu_data@Base 0.11.1
+ urcu_bp_set_pointer_sym@Base 0.11.1
+ urcu_bp_set_thread_call_rcu_data@Base 0.11.1
+ urcu_bp_synchronize_rcu@Base 0.11.1
+ urcu_bp_unregister_rculfhash_atfork@Base 0.11.1
+ urcu_bp_xchg_pointer_sym@Base 0.11.1
  urcu_register_rculfhash_atfork_bp@Base 0.10.0
  urcu_unregister_rculfhash_atfork_bp@Base 0.10.0
 liburcu-cds.so.6 liburcu6 #MINVER#
@@ -202,8 +241,121 @@ liburcu-mb.so.6 liburcu6 #MINVER#
  set_cpu_call_rcu_data_mb@Base 0.10.0
  set_thread_call_rcu_data_mb@Base 0.10.0
  synchronize_rcu_mb@Base 0.10.0
+ urcu_mb_barrier@Base 0.11.1
+ urcu_mb_call_rcu@Base 0.11.1
+ urcu_mb_call_rcu_after_fork_child@Base 0.11.1
+ urcu_mb_call_rcu_after_fork_parent@Base 0.11.1
+ urcu_mb_call_rcu_before_fork@Base 0.11.1
+ urcu_mb_call_rcu_data_free@Base 0.11.1
+ urcu_mb_create_all_cpu_call_rcu_data@Base 0.11.1
+ urcu_mb_create_call_rcu_data@Base 0.11.1
+ urcu_mb_defer_barrier@Base 0.11.1
+ urcu_mb_defer_barrier_thread@Base 0.11.1
+ urcu_mb_defer_exit@Base 0.11.1
+ urcu_mb_defer_rcu@Base 0.11.1
+ urcu_mb_defer_register_thread@Base 0.11.1
+ urcu_mb_defer_unregister_thread@Base 0.11.1
+ urcu_mb_flavor@Base 0.11.1
+ urcu_mb_free_all_cpu_call_rcu_data@Base 0.11.1
+ urcu_mb_get_call_rcu_data@Base 0.11.1
+ urcu_mb_get_call_rcu_thread@Base 0.11.1
+ urcu_mb_get_cpu_call_rcu_data@Base 0.11.1
+ urcu_mb_get_default_call_rcu_data@Base 0.11.1
+ urcu_mb_get_thread_call_rcu_data@Base 0.11.1
+ urcu_mb_gp@Base 0.11.1
+ urcu_mb_init@Base 0.11.1
+ urcu_mb_read_lock@Base 0.11.1
+ urcu_mb_read_ongoing@Base 0.11.1
+ urcu_mb_read_unlock@Base 0.11.1
+ urcu_mb_reader@Base 0.11.1
+ urcu_mb_register_rculfhash_atfork@Base 0.11.1
+ urcu_mb_register_thread@Base 0.11.1
+ urcu_mb_set_cpu_call_rcu_data@Base 0.11.1
+ urcu_mb_set_thread_call_rcu_data@Base 0.11.1
+ urcu_mb_synchronize_rcu@Base 0.11.1
+ urcu_mb_unregister_rculfhash_atfork@Base 0.11.1
+ urcu_mb_unregister_thread@Base 0.11.1
  urcu_register_rculfhash_atfork_mb@Base 0.10.0
  urcu_unregister_rculfhash_atfork_mb@Base 0.10.0
+liburcu-memb.so.6 liburcu6 #MINVER#
+ __urcu_compat_futex_cond@Base 0.11.1
+ __urcu_compat_futex_lock@Base 0.11.1
+ call_rcu_after_fork_child_memb@Base 0.11.1
+ call_rcu_after_fork_parent_memb@Base 0.11.1
+ call_rcu_before_fork_memb@Base 0.11.1
+ call_rcu_data_free_memb@Base 0.11.1
+ call_rcu_memb@Base 0.11.1
+ compat_futex_async@Base 0.11.1
+ compat_futex_noasync@Base 0.11.1
+ create_all_cpu_call_rcu_data_memb@Base 0.11.1
+ create_call_rcu_data_memb@Base 0.11.1
+ defer_rcu_memb@Base 0.11.1
+ free_all_cpu_call_rcu_data_memb@Base 0.11.1
+ get_call_rcu_data_memb@Base 0.11.1
+ get_call_rcu_thread_memb@Base 0.11.1
+ get_cpu_call_rcu_data_memb@Base 0.11.1
+ get_default_call_rcu_data_memb@Base 0.11.1
+ get_thread_call_rcu_data_memb@Base 0.11.1
+ rcu_barrier_memb@Base 0.11.1
+ rcu_cmpxchg_pointer_sym@Base 0.11.1
+ rcu_defer_barrier_memb@Base 0.11.1
+ rcu_defer_barrier_thread_memb@Base 0.11.1
+ rcu_defer_exit_memb@Base 0.11.1
+ rcu_defer_register_thread_memb@Base 0.11.1
+ rcu_defer_unregister_thread_memb@Base 0.11.1
+ rcu_dereference_sym@Base 0.11.1
+ rcu_flavor_memb@Base 0.11.1
+ rcu_gp_memb@Base 0.11.1
+ rcu_has_sys_membarrier_memb@Base 0.11.1
+ rcu_init_memb@Base 0.11.1
+ rcu_read_lock_memb@Base 0.11.1
+ rcu_read_ongoing_memb@Base 0.11.1
+ rcu_read_unlock_memb@Base 0.11.1
+ rcu_reader_memb@Base 0.11.1
+ rcu_register_thread_memb@Base 0.11.1
+ rcu_set_pointer_sym@Base 0.11.1
+ rcu_unregister_thread_memb@Base 0.11.1
+ rcu_xchg_pointer_sym@Base 0.11.1
+ set_cpu_call_rcu_data_memb@Base 0.11.1
+ set_thread_call_rcu_data_memb@Base 0.11.1
+ synchronize_rcu_memb@Base 0.11.1
+ urcu_memb_barrier@Base 0.11.1
+ urcu_memb_call_rcu@Base 0.11.1
+ urcu_memb_call_rcu_after_fork_child@Base 0.11.1
+ urcu_memb_call_rcu_after_fork_parent@Base 0.11.1
+ urcu_memb_call_rcu_before_fork@Base 0.11.1
+ urcu_memb_call_rcu_data_free@Base 0.11.1
+ urcu_memb_create_all_cpu_call_rcu_data@Base 0.11.1
+ urcu_memb_create_call_rcu_data@Base 0.11.1
+ urcu_memb_defer_barrier@Base 0.11.1
+ urcu_memb_defer_barrier_thread@Base 0.11.1
+ urcu_memb_defer_exit@Base 0.11.1
+ urcu_memb_defer_rcu@Base 0.11.1
+ urcu_memb_defer_register_thread@Base 0.11.1
+ urcu_memb_defer_unregister_thread@Base 0.11.1
+ urcu_memb_flavor@Base 0.11.1
+ urcu_memb_free_all_cpu_call_rcu_data@Base 0.11.1
+ urcu_memb_get_call_rcu_data@Base 0.11.1
+ urcu_memb_get_call_rcu_thread@Base 0.11.1
+ urcu_memb_get_cpu_call_rcu_data@Base 0.11.1
+ urcu_memb_get_default_call_rcu_data@Base 0.11.1
+ urcu_memb_get_thread_call_rcu_data@Base 0.11.1
+ urcu_memb_gp@Base 0.11.1
+ urcu_memb_has_sys_membarrier@Base 0.11.1
+ urcu_memb_init@Base 0.11.1
+ urcu_memb_read_lock@Base 0.11.1
+ urcu_memb_read_ongoing@Base 0.11.1
+ urcu_memb_read_unlock@Base 0.11.1
+ urcu_memb_reader@Base 0.11.1
+ urcu_memb_register_rculfhash_atfork@Base 0.11.1
+ urcu_memb_register_thread@Base 0.11.1
+ urcu_memb_set_cpu_call_rcu_data@Base 0.11.1
+ urcu_memb_set_thread_call_rcu_data@Base 0.11.1
+ urcu_memb_synchronize_rcu@Base 0.11.1
+ urcu_memb_unregister_rculfhash_atfork@Base 0.11.1
+ urcu_memb_unregister_thread@Base 0.11.1
+ urcu_register_rculfhash_atfork_memb@Base 0.11.1
+ urcu_unregister_rculfhash_atfork_memb@Base 0.11.1
 liburcu-qsbr.so.6 liburcu6 #MINVER#
 * Build-Depends-Package: liburcu-dev
  (arch=m68k,riscv64)__tls_access_rcu_reader_qsbr@Base 0.10.0
@@ -250,6 +402,43 @@ liburcu-qsbr.so.6 liburcu6 #MINVER#
  set_cpu_call_rcu_data_qsbr@Base 0.10.0
  set_thread_call_rcu_data_qsbr@Base 0.10.0
  synchronize_rcu_qsbr@Base 0.10.0
+ urcu_qsbr_barrier@Base 0.11.1
+ urcu_qsbr_call_rcu@Base 0.11.1
+ urcu_qsbr_call_rcu_after_fork_child@Base 0.11.1
+ urcu_qsbr_call_rcu_after_fork_parent@Base 0.11.1
+ urcu_qsbr_call_rcu_before_fork@Base 0.11.1
+ urcu_qsbr_call_rcu_data_free@Base 0.11.1
+ urcu_qsbr_create_all_cpu_call_rcu_data@Base 0.11.1
+ urcu_qsbr_create_call_rcu_data@Base 0.11.1
+ urcu_qsbr_defer_barrier@Base 0.11.1
+ urcu_qsbr_defer_barrier_thread@Base 0.11.1
+ urcu_qsbr_defer_exit@Base 0.11.1
+ urcu_qsbr_defer_rcu@Base 0.11.1
+ urcu_qsbr_defer_register_thread@Base 0.11.1
+ urcu_qsbr_defer_unregister_thread@Base 0.11.1
+ urcu_qsbr_exit@Base 0.11.1
+ urcu_qsbr_flavor@Base 0.11.1
+ urcu_qsbr_free_all_cpu_call_rcu_data@Base 0.11.1
+ urcu_qsbr_get_call_rcu_data@Base 0.11.1
+ urcu_qsbr_get_call_rcu_thread@Base 0.11.1
+ urcu_qsbr_get_cpu_call_rcu_data@Base 0.11.1
+ urcu_qsbr_get_default_call_rcu_data@Base 0.11.1
+ urcu_qsbr_get_thread_call_rcu_data@Base 0.11.1
+ urcu_qsbr_gp@Base 0.11.1
+ urcu_qsbr_quiescent_state@Base 0.11.1
+ urcu_qsbr_read_lock@Base 0.11.1
+ urcu_qsbr_read_ongoing@Base 0.11.1
+ urcu_qsbr_read_unlock@Base 0.11.1
+ urcu_qsbr_reader@Base 0.11.1
+ urcu_qsbr_register_rculfhash_atfork@Base 0.11.1
+ urcu_qsbr_register_thread@Base 0.11.1
+ urcu_qsbr_set_cpu_call_rcu_data@Base 0.11.1
+ urcu_qsbr_set_thread_call_rcu_data@Base 0.11.1
+ urcu_qsbr_synchronize_rcu@Base 0.11.1
+ urcu_qsbr_thread_offline@Base 0.11.1
+ urcu_qsbr_thread_online@Base 0.11.1
+ urcu_qsbr_unregister_rculfhash_atfork@Base 0.11.1
+ urcu_qsbr_unregister_thread@Base 0.11.1
  urcu_register_rculfhash_atfork_qsbr@Base 0.10.0
  urcu_unregister_rculfhash_atfork_qsbr@Base 0.10.0
 liburcu-signal.so.6 liburcu6 #MINVER#
@@ -297,6 +486,41 @@ liburcu-signal.so.6 liburcu6 #MINVER#
  set_thread_call_rcu_data_sig@Base 0.10.0
  synchronize_rcu_sig@Base 0.10.0
  urcu_register_rculfhash_atfork_sig@Base 0.10.0
+ urcu_signal_barrier@Base 0.11.1
+ urcu_signal_call_rcu@Base 0.11.1
+ urcu_signal_call_rcu_after_fork_child@Base 0.11.1
+ urcu_signal_call_rcu_after_fork_parent@Base 0.11.1
+ urcu_signal_call_rcu_before_fork@Base 0.11.1
+ urcu_signal_call_rcu_data_free@Base 0.11.1
+ urcu_signal_create_all_cpu_call_rcu_data@Base 0.11.1
+ urcu_signal_create_call_rcu_data@Base 0.11.1
+ urcu_signal_defer_barrier@Base 0.11.1
+ urcu_signal_defer_barrier_thread@Base 0.11.1
+ urcu_signal_defer_exit@Base 0.11.1
+ urcu_signal_defer_rcu@Base 0.11.1
+ urcu_signal_defer_register_thread@Base 0.11.1
+ urcu_signal_defer_unregister_thread@Base 0.11.1
+ urcu_signal_exit@Base 0.11.1
+ urcu_signal_flavor@Base 0.11.1
+ urcu_signal_free_all_cpu_call_rcu_data@Base 0.11.1
+ urcu_signal_get_call_rcu_data@Base 0.11.1
+ urcu_signal_get_call_rcu_thread@Base 0.11.1
+ urcu_signal_get_cpu_call_rcu_data@Base 0.11.1
+ urcu_signal_get_default_call_rcu_data@Base 0.11.1
+ urcu_signal_get_thread_call_rcu_data@Base 0.11.1
+ urcu_signal_gp@Base 0.11.1
+ urcu_signal_init@Base 0.11.1
+ urcu_signal_read_lock@Base 0.11.1
+ urcu_signal_read_ongoing@Base 0.11.1
+ urcu_signal_read_unlock@Base 0.11.1
+ urcu_signal_reader@Base 0.11.1
+ urcu_signal_register_rculfhash_atfork@Base 0.11.1
+ urcu_signal_register_thread@Base 0.11.1
+ urcu_signal_set_cpu_call_rcu_data@Base 0.11.1
+ urcu_signal_set_thread_call_rcu_data@Base 0.11.1
+ urcu_signal_synchronize_rcu@Base 0.11.1
+ urcu_signal_unregister_rculfhash_atfork@Base 0.11.1
+ urcu_signal_unregister_thread@Base 0.11.1
  urcu_unregister_rculfhash_atfork_sig@Base 0.10.0
 liburcu.so.6 liburcu6 #MINVER#
 * Build-Depends-Package: liburcu-dev
@@ -342,5 +566,40 @@ liburcu.so.6 liburcu6 #MINVER#
  set_cpu_call_rcu_data_memb@Base 0.10.0
  set_thread_call_rcu_data_memb@Base 0.10.0
  synchronize_rcu_memb@Base 0.10.0
+ urcu_memb_barrier@Base 0.11.1
+ urcu_memb_call_rcu@Base 0.11.1
+ urcu_memb_call_rcu_after_fork_child@Base 0.11.1
+ urcu_memb_call_rcu_after_fork_parent@Base 0.11.1
+ urcu_memb_call_rcu_before_fork@Base 0.11.1
+ urcu_memb_call_rcu_data_free@Base 0.11.1
+ urcu_memb_create_all_cpu_call_rcu_data@Base 0.11.1
+ urcu_memb_create_call_rcu_data@Base 0.11.1
+ urcu_memb_defer_barrier@Base 0.11.1
+ urcu_memb_defer_barrier_thread@Base 0.11.1
+ urcu_memb_defer_exit@Base 0.11.1
+ urcu_memb_defer_rcu@Base 0.11.1
+ urcu_memb_defer_register_thread@Base 0.11.1
+ urcu_memb_defer_unregister_thread@Base 0.11.1
+ urcu_memb_flavor@Base 0.11.1
+ urcu_memb_free_all_cpu_call_rcu_data@Base 0.11.1
+ urcu_memb_get_call_rcu_data@Base 0.11.1
+ urcu_memb_get_call_rcu_thread@Base 0.11.1
+ urcu_memb_get_cpu_call_rcu_data@Base 0.11.1
+ urcu_memb_get_default_call_rcu_data@Base 0.11.1
+ urcu_memb_get_thread_call_rcu_data@Base 0.11.1
+ urcu_memb_gp@Base 0.11.1
+ urcu_memb_has_sys_membarrier@Base 0.11.1
+ urcu_memb_init@Base 0.11.1
+ urcu_memb_read_lock@Base 0.11.1
+ urcu_memb_read_ongoing@Base 0.11.1
+ urcu_memb_read_unlock@Base 0.11.1
+ urcu_memb_reader@Base 0.11.1
+ urcu_memb_register_rculfhash_atfork@Base 0.11.1
+ urcu_memb_register_thread@Base 0.11.1
+ urcu_memb_set_cpu_call_rcu_data@Base 0.11.1
+ urcu_memb_set_thread_call_rcu_data@Base 0.11.1
+ urcu_memb_synchronize_rcu@Base 0.11.1
+ urcu_memb_unregister_rculfhash_atfork@Base 0.11.1
+ urcu_memb_unregister_thread@Base 0.11.1
  urcu_register_rculfhash_atfork_memb@Base 0.10.0
  urcu_unregister_rculfhash_atfork_memb@Base 0.10.0
