@@ -1,3 +1,14 @@
+liburcu (0.11.1-1) unstable; urgency=medium
+
+  * [02dd0d7] Add Salsa CI configuration
+  * [c404ca6] Disable Salsa CI blhc test
+  * [21cec4a] New upstream version 0.11.1
+  * [cae21c3] Refresh patches for 0.11.1
+  * [bad2ac2] Update symbols for 0.11.1
+  * [e0c8a67] Update copyright for 0.11.1
+
+ -- Michael Jeanson <mjeanson@debian.org>  Fri, 12 Jul 2019 16:52:01 -0400
+
 liburcu (0.10.2-1) unstable; urgency=medium
 
   * [c877604] New upstream version 0.10.2
