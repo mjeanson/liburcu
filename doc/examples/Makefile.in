@@ -844,7 +844,7 @@ uninstall-am: uninstall-dist_doc_examplesDATA \
 
 # Copies are for VPATH build support.
 @NO_SHARED_FALSE@all-local:
-@NO_SHARED_FALSE@	@if [ x"$(srcdir)" != x"$(builddir)" ]; then \
+@NO_SHARED_FALSE@	$(AM_V_at)if [ x"$(srcdir)" != x"$(builddir)" ]; then \
 @NO_SHARED_FALSE@		cp -pfR $(srcdir)/dist-files $(builddir); \
 @NO_SHARED_FALSE@		chmod -R u+w $(builddir)/dist-files; \
 @NO_SHARED_FALSE@		cp -pf $(srcdir)/Makefile.examples.template $(builddir); \
@@ -855,23 +855,19 @@ uninstall-am: uninstall-dist_doc_examplesDATA \
 @NO_SHARED_FALSE@		done; \
 @NO_SHARED_FALSE@	fi; \
 @NO_SHARED_FALSE@	if [ x"$(shell echo "$(top_srcdir)" | $(GREP) "^/" | wc -l)" = x"1" ]; then \
-@NO_SHARED_FALSE@		echo "Examples: absolute top_srcdir path $(top_srcdir)"; \
 @NO_SHARED_FALSE@		rel_src_subdir=""; \
 @NO_SHARED_FALSE@	else \
-@NO_SHARED_FALSE@		echo "Examples: relative top_srcdir path $(top_srcdir)"; \
 @NO_SHARED_FALSE@		rel_src_subdir="../"; \
 @NO_SHARED_FALSE@	fi; \
 @NO_SHARED_FALSE@	if [ x"$(shell echo "$(top_builddir)" | $(GREP) "^/" | wc -l)" = x"1" ]; then \
-@NO_SHARED_FALSE@		echo "Examples: absolute top_builddir path $(top_builddir)"; \
 @NO_SHARED_FALSE@		rel_build_subdir=""; \
 @NO_SHARED_FALSE@	else \
-@NO_SHARED_FALSE@		echo "Examples: relative top_builddir path $(top_builddir)"; \
 @NO_SHARED_FALSE@		rel_build_subdir="../"; \
 @NO_SHARED_FALSE@	fi; \
-@NO_SHARED_FALSE@	$(MAKE) -f dist-files/Makefile CC="$(CC)" CPPFLAGS="$(CPPLAGS)" AM_CPPFLAGS="$(AM_CPPFLAGS) -I"$${rel_src_subdir}/$(top_srcdir)/include/" -I"$${rel_src_subdir}/$(top_srcdir)/src/" -I"$${rel_build_subdir}$(top_builddir)/include/" -I"$${rel_build_subdir}$(top_builddir)/include/src/"" CFLAGS="$(CFLAGS)" AM_CFLAGS="$(AM_CFLAGS)" LDFLAGS="$(LDFLAGS)" AM_LDFLAGS="$(AM_LDFLAGS) -L../../../src/.libs/ -Wl,-rpath "$(PWD)/../../src/.libs/"" $(AM_MAKEFLAGS) all;
+@NO_SHARED_FALSE@	$(MAKE) -f dist-files/Makefile CC="$(CC)" CPPFLAGS="$(CPPFLAGS)" AM_CPPFLAGS="$(AM_CPPFLAGS) -I"$${rel_src_subdir}/$(top_srcdir)/include/" -I"$${rel_src_subdir}/$(top_srcdir)/src/" -I"$${rel_build_subdir}$(top_builddir)/include/" -I"$${rel_build_subdir}$(top_builddir)/include/src/"" CFLAGS="$(CFLAGS)" AM_CFLAGS="$(AM_CFLAGS)" LDFLAGS="$(LDFLAGS)" AM_LDFLAGS="$(AM_LDFLAGS) -L../../../src/.libs/ -Wl,-rpath "$(PWD)/../../src/.libs/"" AM_V_P="$(AM_V_P)" AM_V_at="$(AM_V_at)" $(AM_MAKEFLAGS) all;
 
 @NO_SHARED_FALSE@clean-local:
-@NO_SHARED_FALSE@	@$(MAKE) -f dist-files/Makefile $(AM_MAKEFLAGS) clean; \
+@NO_SHARED_FALSE@	$(AM_V_at)$(MAKE) -f dist-files/Makefile $(AM_MAKEFLAGS) clean; \
 @NO_SHARED_FALSE@	if [ x"$(srcdir)" != x"$(builddir)" ]; then \
 @NO_SHARED_FALSE@		for subdir in $(SUBDIRS_PROXY); do \
 @NO_SHARED_FALSE@			rm -rf $(builddir)/$$subdir; \

@@ -266,9 +266,9 @@
 #include <unistd.h>
 
 #include "compat-getcpu.h"
-#include <urcu-pointer.h>
-#include <urcu-call-rcu.h>
-#include <urcu-flavor.h>
+#include <urcu/pointer.h>
+#include <urcu/call-rcu.h>
+#include <urcu/flavor.h>
 #include <urcu/arch.h>
 #include <urcu/uatomic.h>
 #include <urcu/compiler.h>
@@ -279,6 +279,7 @@
 #include <signal.h>
 #include "workqueue.h"
 #include "urcu-die.h"
+#include "urcu-utils.h"
 
 /*
  * Split-counters lazily update the global counter each 1024
@@ -379,6 +380,27 @@ static int cds_lfht_workqueue_atfork_nesting;
 
 static void cds_lfht_init_worker(const struct rcu_flavor_struct *flavor);
 static void cds_lfht_fini_worker(const struct rcu_flavor_struct *flavor);
+
+#ifdef CONFIG_CDS_LFHT_ITER_DEBUG
+
+static
+void cds_lfht_iter_debug_set_ht(struct cds_lfht *ht, struct cds_lfht_iter *iter)
+{
+	iter->lfht = ht;
+}
+
+#define cds_lfht_iter_debug_assert(...)		assert(__VA_ARGS__)
+
+#else
+
+static
+void cds_lfht_iter_debug_set_ht(struct cds_lfht *ht, struct cds_lfht_iter *iter)
+{
+}
+
+#define cds_lfht_iter_debug_assert(...)
+
+#endif
 
 /*
  * Algorithm to reverse bits in a word by lookup table, extended to
@@ -690,9 +712,8 @@ int ht_get_split_count_index(unsigned long hash)
 static
 void ht_count_add(struct cds_lfht *ht, unsigned long size, unsigned long hash)
 {
-	unsigned long split_count;
+	unsigned long split_count, count;
 	int index;
-	long count;
 
 	if (caa_unlikely(!ht->split_count))
 		return;
@@ -711,7 +732,7 @@ void ht_count_add(struct cds_lfht *ht, unsigned long size, unsigned long hash)
 
 	if ((count >> CHAIN_LEN_RESIZE_THRESHOLD) < size)
 		return;
-	dbg_printf("add set global %ld\n", count);
+	dbg_printf("add set global %lu\n", count);
 	cds_lfht_resize_lazy_count(ht, size,
 		count >> (CHAIN_LEN_TARGET - 1));
 }
@@ -719,9 +740,8 @@ void ht_count_add(struct cds_lfht *ht, unsigned long size, unsigned long hash)
 static
 void ht_count_del(struct cds_lfht *ht, unsigned long size, unsigned long hash)
 {
-	unsigned long split_count;
+	unsigned long split_count, count;
 	int index;
-	long count;
 
 	if (caa_unlikely(!ht->split_count))
 		return;
@@ -1068,7 +1088,13 @@ void _cds_lfht_add(struct cds_lfht *ht,
 			if (unique_ret
 			    && !is_bucket(next)
 			    && clear_flag(iter)->reverse_hash == node->reverse_hash) {
-				struct cds_lfht_iter d_iter = { .node = node, .next = iter, };
+				struct cds_lfht_iter d_iter = {
+					.node = node,
+					.next = iter,
+#ifdef CONFIG_CDS_LFHT_ITER_DEBUG
+					.lfht = ht,
+#endif
+				};
 
 				/*
 				 * uniquely adding inserts the node as the first
@@ -1220,8 +1246,8 @@ void partition_resize_helper(struct cds_lfht *ht, unsigned long i,
 {
 	unsigned long partition_len, start = 0;
 	struct partition_resize_work *work;
-	int thread, ret;
-	unsigned long nr_threads;
+	int ret;
+	unsigned long thread, nr_threads;
 
 	assert(nr_cpus_mask != -1);
 	if (nr_cpus_mask < 0 || len < 2 * MIN_PARTITION_PER_THREAD)
@@ -1233,7 +1259,7 @@ void partition_resize_helper(struct cds_lfht *ht, unsigned long i,
 	 * partition size, up to the number of CPUs in the system.
 	 */
 	if (nr_cpus_mask > 0) {
-		nr_threads = min(nr_cpus_mask + 1,
+		nr_threads = min_t(unsigned long, nr_cpus_mask + 1,
 				 len >> MIN_PARTITION_PER_THREAD_ORDER);
 	} else {
 		nr_threads = 1;
@@ -1422,8 +1448,7 @@ static
 void fini_table(struct cds_lfht *ht,
 		unsigned long first_order, unsigned long last_order)
 {
-	long i;
-	unsigned long free_by_rcu_order = 0;
+	unsigned long free_by_rcu_order = 0, i;
 
 	dbg_printf("fini table: first_order %lu last_order %lu\n",
 		   first_order, last_order);
@@ -1472,11 +1497,15 @@ void fini_table(struct cds_lfht *ht,
 	}
 }
 
+/*
+ * Never called with size < 1.
+ */
 static
 void cds_lfht_create_bucket(struct cds_lfht *ht, unsigned long size)
 {
 	struct cds_lfht_node *prev, *node;
 	unsigned long order, len, i;
+	int bucket_order;
 
 	cds_lfht_alloc_bucket_table(ht, 0);
 
@@ -1485,7 +1514,10 @@ void cds_lfht_create_bucket(struct cds_lfht *ht, unsigned long size)
 	node->next = flag_bucket(get_end());
 	node->reverse_hash = 0;
 
-	for (order = 1; order < cds_lfht_get_count_order_ulong(size) + 1; order++) {
+	bucket_order = cds_lfht_get_count_order_ulong(size);
+	assert(bucket_order >= 0);
+
+	for (order = 1; order < (unsigned long) bucket_order + 1; order++) {
 		len = 1UL << (order - 1);
 		cds_lfht_alloc_bucket_table(ht, order);
 
@@ -1516,6 +1548,32 @@ void cds_lfht_create_bucket(struct cds_lfht *ht, unsigned long size)
 	}
 }
 
+#if (CAA_BITS_PER_LONG > 32)
+/*
+ * For 64-bit architectures, with max number of buckets small enough not to
+ * use the entire 64-bit memory mapping space (and allowing a fair number of
+ * hash table instances), use the mmap allocator, which is faster. Otherwise,
+ * fallback to the order allocator.
+ */
+static
+const struct cds_lfht_mm_type *get_mm_type(unsigned long max_nr_buckets)
+{
+	if (max_nr_buckets && max_nr_buckets <= (1ULL << 32))
+		return &cds_lfht_mm_mmap;
+	else
+		return &cds_lfht_mm_order;
+}
+#else
+/*
+ * For 32-bit architectures, use the order allocator.
+ */
+static
+const struct cds_lfht_mm_type *get_mm_type(unsigned long max_nr_buckets)
+{
+	return &cds_lfht_mm_order;
+}
+#endif
+
 struct cds_lfht *_cds_lfht_new(unsigned long init_size,
 			unsigned long min_nr_alloc_buckets,
 			unsigned long max_nr_buckets,
@@ -1538,26 +1596,8 @@ struct cds_lfht *_cds_lfht_new(unsigned long init_size,
 	/*
 	 * Memory management plugin default.
 	 */
-	if (!mm) {
-		if (CAA_BITS_PER_LONG > 32
-				&& max_nr_buckets
-				&& max_nr_buckets <= (1ULL << 32)) {
-			/*
-			 * For 64-bit architectures, with max number of
-			 * buckets small enough not to use the entire
-			 * 64-bit memory mapping space (and allowing a
-			 * fair number of hash table instances), use the
-			 * mmap allocator, which is faster than the
-			 * order allocator.
-			 */
-			mm = &cds_lfht_mm_mmap;
-		} else {
-			/*
-			 * The fallback is to use the order allocator.
-			 */
-			mm = &cds_lfht_mm_order;
-		}
-	}
+	if (!mm)
+		mm = get_mm_type(max_nr_buckets);
 
 	/* max_nr_buckets == 0 for order based mm means infinite */
 	if (mm == &cds_lfht_mm_order && !max_nr_buckets)
@@ -1600,6 +1640,8 @@ void cds_lfht_lookup(struct cds_lfht *ht, unsigned long hash,
 	struct cds_lfht_node *node, *next, *bucket;
 	unsigned long reverse_hash, size;
 
+	cds_lfht_iter_debug_set_ht(ht, iter);
+
 	reverse_hash = bit_reverse_ulong(hash);
 
 	size = rcu_dereference(ht->size);
@@ -1637,6 +1679,7 @@ void cds_lfht_next_duplicate(struct cds_lfht *ht, cds_lfht_match_fct match,
 	struct cds_lfht_node *node, *next;
 	unsigned long reverse_hash;
 
+	cds_lfht_iter_debug_assert(ht == iter->lfht);
 	node = iter->node;
 	reverse_hash = node->reverse_hash;
 	next = iter->next;
@@ -1668,6 +1711,7 @@ void cds_lfht_next(struct cds_lfht *ht, struct cds_lfht_iter *iter)
 {
 	struct cds_lfht_node *node, *next;
 
+	cds_lfht_iter_debug_assert(ht == iter->lfht);
 	node = clear_flag(iter->next);
 	for (;;) {
 		if (caa_unlikely(is_end(node))) {
@@ -1688,6 +1732,7 @@ void cds_lfht_next(struct cds_lfht *ht, struct cds_lfht_iter *iter)
 
 void cds_lfht_first(struct cds_lfht *ht, struct cds_lfht_iter *iter)
 {
+	cds_lfht_iter_debug_set_ht(ht, iter);
 	/*
 	 * Get next after first bucket node. The first bucket node is the
 	 * first node of the linked list.

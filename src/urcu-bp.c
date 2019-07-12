@@ -23,6 +23,7 @@
  * IBM's contributions to this file may be relicensed under LGPLv2 or later.
  */
 
+#define URCU_NO_COMPAT_IDENTIFIERS
 #define _LGPL_SOURCE
 #include <stdio.h>
 #include <pthread.h>
@@ -33,20 +34,23 @@
 #include <errno.h>
 #include <poll.h>
 #include <unistd.h>
+#include <stdbool.h>
 #include <sys/mman.h>
 
-#include "urcu/arch.h"
-#include "urcu/wfcqueue.h"
-#include "urcu/map/urcu-bp.h"
-#include "urcu/static/urcu-bp.h"
-#include "urcu-pointer.h"
-#include "urcu/tls-compat.h"
+#include <urcu/arch.h>
+#include <urcu/wfcqueue.h>
+#include <urcu/map/urcu-bp.h>
+#include <urcu/static/urcu-bp.h>
+#include <urcu/pointer.h>
+#include <urcu/tls-compat.h>
 
 #include "urcu-die.h"
+#include "urcu-utils.h"
 
+#define URCU_API_MAP
 /* Do not #define _LGPL_SOURCE to ensure we can emit the wrapper symbols */
 #undef _LGPL_SOURCE
-#include "urcu-bp.h"
+#include <urcu/urcu-bp.h>
 #define _LGPL_SOURCE
 
 #ifndef MAP_ANONYMOUS
@@ -84,7 +88,7 @@ void *mremap_wrapper(void *old_address, size_t old_size,
 #define INIT_NR_THREADS		8
 #define ARENA_INIT_ALLOC		\
 	sizeof(struct registry_chunk)	\
-	+ INIT_NR_THREADS * sizeof(struct rcu_reader)
+	+ INIT_NR_THREADS * sizeof(struct urcu_bp_reader)
 
 /*
  * Active attempts to check for reader Q.S. before calling sleep().
@@ -92,7 +96,7 @@ void *mremap_wrapper(void *old_address, size_t old_size,
 #define RCU_QS_ACTIVE_ATTEMPTS 100
 
 static
-int rcu_bp_refcount;
+int urcu_bp_refcount;
 
 /* If the headers do not support membarrier system call, fall back smp_mb. */
 #ifdef __NR_membarrier
@@ -102,14 +106,18 @@ int rcu_bp_refcount;
 #endif
 
 enum membarrier_cmd {
-	MEMBARRIER_CMD_QUERY = 0,
-	MEMBARRIER_CMD_SHARED = (1 << 0),
+	MEMBARRIER_CMD_QUERY				= 0,
+	MEMBARRIER_CMD_SHARED				= (1 << 0),
+	/* reserved for MEMBARRIER_CMD_SHARED_EXPEDITED (1 << 1) */
+	/* reserved for MEMBARRIER_CMD_PRIVATE (1 << 2) */
+	MEMBARRIER_CMD_PRIVATE_EXPEDITED		= (1 << 3),
+	MEMBARRIER_CMD_REGISTER_PRIVATE_EXPEDITED	= (1 << 4),
 };
 
 static
-void __attribute__((constructor)) rcu_bp_init(void);
+void __attribute__((constructor)) _urcu_bp_init(void);
 static
-void __attribute__((destructor)) rcu_bp_exit(void);
+void __attribute__((destructor)) urcu_bp_exit(void);
 
 #ifndef CONFIG_RCU_FORCE_SYS_MEMBARRIER
 int urcu_bp_has_sys_membarrier;
@@ -136,13 +144,15 @@ static int initialized;
 
 static pthread_key_t urcu_bp_key;
 
-struct rcu_gp rcu_gp = { .ctr = RCU_GP_COUNT };
+struct urcu_bp_gp urcu_bp_gp = { .ctr = URCU_BP_GP_COUNT };
+URCU_ATTR_ALIAS("urcu_bp_gp") extern struct urcu_bp_gp rcu_gp_bp;
 
 /*
  * Pointer to registry elements. Written to only by each individual reader. Read
  * by both the reader and the writers.
  */
-DEFINE_URCU_TLS(struct rcu_reader *, rcu_reader);
+DEFINE_URCU_TLS(struct urcu_bp_reader *, urcu_bp_reader);
+DEFINE_URCU_TLS_ALIAS(struct urcu_bp_reader *, urcu_bp_reader, rcu_reader_bp);
 
 static CDS_LIST_HEAD(registry);
 
@@ -192,10 +202,12 @@ static void mutex_unlock(pthread_mutex_t *mutex)
 
 static void smp_mb_master(void)
 {
-	if (caa_likely(urcu_bp_has_sys_membarrier))
-		(void) membarrier(MEMBARRIER_CMD_SHARED, 0);
-	else
+	if (caa_likely(urcu_bp_has_sys_membarrier)) {
+		if (membarrier(MEMBARRIER_CMD_PRIVATE_EXPEDITED, 0))
+			urcu_die(errno);
+	} else {
 		cmm_smp_mb();
+	}
 }
 
 /*
@@ -207,10 +219,10 @@ static void wait_for_readers(struct cds_list_head *input_readers,
 			struct cds_list_head *qsreaders)
 {
 	unsigned int wait_loops = 0;
-	struct rcu_reader *index, *tmp;
+	struct urcu_bp_reader *index, *tmp;
 
 	/*
-	 * Wait for each thread URCU_TLS(rcu_reader).ctr to either
+	 * Wait for each thread URCU_TLS(urcu_bp_reader).ctr to either
 	 * indicate quiescence (not nested), or observe the current
 	 * rcu_gp.ctr value.
 	 */
@@ -219,18 +231,18 @@ static void wait_for_readers(struct cds_list_head *input_readers,
 			wait_loops++;
 
 		cds_list_for_each_entry_safe(index, tmp, input_readers, node) {
-			switch (rcu_reader_state(&index->ctr)) {
-			case RCU_READER_ACTIVE_CURRENT:
+			switch (urcu_bp_reader_state(&index->ctr)) {
+			case URCU_BP_READER_ACTIVE_CURRENT:
 				if (cur_snap_readers) {
 					cds_list_move(&index->node,
 						cur_snap_readers);
 					break;
 				}
 				/* Fall-through */
-			case RCU_READER_INACTIVE:
+			case URCU_BP_READER_INACTIVE:
 				cds_list_move(&index->node, qsreaders);
 				break;
-			case RCU_READER_ACTIVE_OLD:
+			case URCU_BP_READER_ACTIVE_OLD:
 				/*
 				 * Old snapshot. Leaving node in
 				 * input_readers will make us busy-loop
@@ -256,7 +268,7 @@ static void wait_for_readers(struct cds_list_head *input_readers,
 	}
 }
 
-void synchronize_rcu(void)
+void urcu_bp_synchronize_rcu(void)
 {
 	CDS_LIST_HEAD(cur_snap_readers);
 	CDS_LIST_HEAD(qsreaders);
@@ -295,7 +307,7 @@ void synchronize_rcu(void)
 	cmm_smp_mb();
 
 	/* Switch parity: 0 -> 1, 1 -> 0 */
-	CMM_STORE_SHARED(rcu_gp.ctr, rcu_gp.ctr ^ RCU_GP_CTR_PHASE);
+	CMM_STORE_SHARED(rcu_gp.ctr, rcu_gp.ctr ^ URCU_BP_GP_CTR_PHASE);
 
 	/*
 	 * Must commit qparity update to memory before waiting for other parity
@@ -334,25 +346,29 @@ out:
 	ret = pthread_sigmask(SIG_SETMASK, &oldmask, NULL);
 	assert(!ret);
 }
+URCU_ATTR_ALIAS("urcu_bp_synchronize_rcu") void synchronize_rcu_bp();
 
 /*
  * library wrappers to be used by non-LGPL compatible source code.
  */
 
-void rcu_read_lock(void)
+void urcu_bp_read_lock(void)
 {
-	_rcu_read_lock();
+	_urcu_bp_read_lock();
 }
+URCU_ATTR_ALIAS("urcu_bp_read_lock") void rcu_read_lock_bp();
 
-void rcu_read_unlock(void)
+void urcu_bp_read_unlock(void)
 {
-	_rcu_read_unlock();
+	_urcu_bp_read_unlock();
 }
+URCU_ATTR_ALIAS("urcu_bp_read_unlock") void rcu_read_unlock_bp();
 
-int rcu_read_ongoing(void)
+int urcu_bp_read_ongoing(void)
 {
-	return _rcu_read_ongoing();
+	return _urcu_bp_read_ongoing();
 }
+URCU_ATTR_ALIAS("urcu_bp_read_ongoing") int rcu_read_ongoing_bp();
 
 /*
  * Only grow for now. If empty, allocate a ARENA_INIT_ALLOC sized chunk.
@@ -477,7 +493,7 @@ void add_thread(void)
 	 * Reader threads are pointing to the reader registry. This is
 	 * why its memory should never be relocated.
 	 */
-	URCU_TLS(rcu_reader) = rcu_reader_reg;
+	URCU_TLS(urcu_bp_reader) = rcu_reader_reg;
 }
 
 /* Called with mutex locked */
@@ -512,11 +528,11 @@ static
 void remove_thread(struct rcu_reader *rcu_reader_reg)
 {
 	cleanup_thread(find_chunk(rcu_reader_reg), rcu_reader_reg);
-	URCU_TLS(rcu_reader) = NULL;
+	URCU_TLS(urcu_bp_reader) = NULL;
 }
 
 /* Disable signals, take mutex, add to registry */
-void rcu_bp_register(void)
+void urcu_bp_register(void)
 {
 	sigset_t newmask, oldmask;
 	int ret;
@@ -532,13 +548,13 @@ void rcu_bp_register(void)
 	 * Check if a signal concurrently registered our thread since
 	 * the check in rcu_read_lock().
 	 */
-	if (URCU_TLS(rcu_reader))
+	if (URCU_TLS(urcu_bp_reader))
 		goto end;
 
 	/*
 	 * Take care of early registration before urcu_bp constructor.
 	 */
-	rcu_bp_init();
+	_urcu_bp_init();
 
 	mutex_lock(&rcu_registry_lock);
 	add_thread();
@@ -548,10 +564,11 @@ end:
 	if (ret)
 		abort();
 }
+URCU_ATTR_ALIAS("urcu_bp_register") void rcu_bp_register();
 
 /* Disable signals, take mutex, remove from registry */
 static
-void rcu_bp_unregister(struct rcu_reader *rcu_reader_reg)
+void urcu_bp_unregister(struct rcu_reader *rcu_reader_reg)
 {
 	sigset_t newmask, oldmask;
 	int ret;
@@ -569,7 +586,7 @@ void rcu_bp_unregister(struct rcu_reader *rcu_reader_reg)
 	ret = pthread_sigmask(SIG_SETMASK, &oldmask, NULL);
 	if (ret)
 		abort();
-	rcu_bp_exit();
+	urcu_bp_exit();
 }
 
 /*
@@ -579,54 +596,65 @@ void rcu_bp_unregister(struct rcu_reader *rcu_reader_reg)
 static
 void urcu_bp_thread_exit_notifier(void *rcu_key)
 {
-	rcu_bp_unregister(rcu_key);
+	urcu_bp_unregister(rcu_key);
 }
 
 #ifdef CONFIG_RCU_FORCE_SYS_MEMBARRIER
 static
-void rcu_sys_membarrier_status(int available)
+void urcu_bp_sys_membarrier_status(bool available)
 {
 	if (!available)
 		abort();
 }
 #else
 static
-void rcu_sys_membarrier_status(int available)
+void urcu_bp_sys_membarrier_status(bool available)
 {
-	/*
-	 * membarrier has blocking behavior, which changes the
-	 * application behavior too much compared to using barriers when
-	 * synchronize_rcu is used repeatedly (without using call_rcu).
-	 * Don't use membarrier for now, unless its use has been
-	 * explicitly forced when building liburcu.
-	 */
+	if (!available)
+		return;
+	urcu_bp_has_sys_membarrier = 1;
 }
 #endif
 
 static
-void rcu_bp_init(void)
+void urcu_bp_sys_membarrier_init(void)
+{
+	bool available = false;
+	int mask;
+
+	mask = membarrier(MEMBARRIER_CMD_QUERY, 0);
+	if (mask >= 0) {
+		if (mask & MEMBARRIER_CMD_PRIVATE_EXPEDITED) {
+			if (membarrier(MEMBARRIER_CMD_REGISTER_PRIVATE_EXPEDITED, 0))
+				urcu_die(errno);
+			available = true;
+		}
+	}
+	urcu_bp_sys_membarrier_status(available);
+}
+
+static
+void _urcu_bp_init(void)
 {
 	mutex_lock(&init_lock);
-	if (!rcu_bp_refcount++) {
+	if (!urcu_bp_refcount++) {
 		int ret;
 
 		ret = pthread_key_create(&urcu_bp_key,
 				urcu_bp_thread_exit_notifier);
 		if (ret)
 			abort();
-		ret = membarrier(MEMBARRIER_CMD_QUERY, 0);
-		rcu_sys_membarrier_status(ret >= 0
-				&& (ret & MEMBARRIER_CMD_SHARED));
+		urcu_bp_sys_membarrier_init();
 		initialized = 1;
 	}
 	mutex_unlock(&init_lock);
 }
 
 static
-void rcu_bp_exit(void)
+void urcu_bp_exit(void)
 {
 	mutex_lock(&init_lock);
-	if (!--rcu_bp_refcount) {
+	if (!--urcu_bp_refcount) {
 		struct registry_chunk *chunk, *tmp;
 		int ret;
 
@@ -649,7 +677,7 @@ void rcu_bp_exit(void)
  * any of those locks held. This ensures that the registry and data
  * protected by rcu_gp_lock are in a coherent state in the child.
  */
-void rcu_bp_before_fork(void)
+void urcu_bp_before_fork(void)
 {
 	sigset_t newmask, oldmask;
 	int ret;
@@ -662,8 +690,9 @@ void rcu_bp_before_fork(void)
 	mutex_lock(&rcu_registry_lock);
 	saved_fork_signal_mask = oldmask;
 }
+URCU_ATTR_ALIAS("urcu_bp_before_fork") void rcu_bp_before_fork();
 
-void rcu_bp_after_fork_parent(void)
+void urcu_bp_after_fork_parent(void)
 {
 	sigset_t oldmask;
 	int ret;
@@ -674,6 +703,8 @@ void rcu_bp_after_fork_parent(void)
 	ret = pthread_sigmask(SIG_SETMASK, &oldmask, NULL);
 	assert(!ret);
 }
+URCU_ATTR_ALIAS("urcu_bp_after_fork_parent")
+void rcu_bp_after_fork_parent(void);
 
 /*
  * Prune all entries from registry except our own thread. Fits the Linux
@@ -683,11 +714,11 @@ static
 void urcu_bp_prune_registry(void)
 {
 	struct registry_chunk *chunk;
-	struct rcu_reader *rcu_reader_reg;
+	struct urcu_bp_reader *rcu_reader_reg;
 
 	cds_list_for_each_entry(chunk, &registry_arena.chunk_list, node) {
-		for (rcu_reader_reg = (struct rcu_reader *) &chunk->data[0];
-				rcu_reader_reg < (struct rcu_reader *) &chunk->data[chunk->data_len];
+		for (rcu_reader_reg = (struct urcu_bp_reader *) &chunk->data[0];
+				rcu_reader_reg < (struct urcu_bp_reader *) &chunk->data[chunk->data_len];
 				rcu_reader_reg++) {
 			if (!rcu_reader_reg->alloc)
 				continue;
@@ -698,7 +729,7 @@ void urcu_bp_prune_registry(void)
 	}
 }
 
-void rcu_bp_after_fork_child(void)
+void urcu_bp_after_fork_child(void)
 {
 	sigset_t oldmask;
 	int ret;
@@ -710,32 +741,43 @@ void rcu_bp_after_fork_child(void)
 	ret = pthread_sigmask(SIG_SETMASK, &oldmask, NULL);
 	assert(!ret);
 }
+URCU_ATTR_ALIAS("urcu_bp_after_fork_child")
+void rcu_bp_after_fork_child(void);
 
-void *rcu_dereference_sym_bp(void *p)
+void *urcu_bp_dereference_sym(void *p)
 {
 	return _rcu_dereference(p);
 }
+URCU_ATTR_ALIAS("urcu_bp_dereference_sym")
+void *rcu_dereference_sym_bp();
 
-void *rcu_set_pointer_sym_bp(void **p, void *v)
+void *urcu_bp_set_pointer_sym(void **p, void *v)
 {
 	cmm_wmb();
 	uatomic_set(p, v);
 	return v;
 }
+URCU_ATTR_ALIAS("urcu_bp_set_pointer_sym")
+void *rcu_set_pointer_sym_bp();
 
-void *rcu_xchg_pointer_sym_bp(void **p, void *v)
+void *urcu_bp_xchg_pointer_sym(void **p, void *v)
 {
 	cmm_wmb();
 	return uatomic_xchg(p, v);
 }
+URCU_ATTR_ALIAS("urcu_bp_xchg_pointer_sym")
+void *rcu_xchg_pointer_sym_bp();
 
-void *rcu_cmpxchg_pointer_sym_bp(void **p, void *old, void *_new)
+void *urcu_bp_cmpxchg_pointer_sym(void **p, void *old, void *_new)
 {
 	cmm_wmb();
 	return uatomic_cmpxchg(p, old, _new);
 }
+URCU_ATTR_ALIAS("urcu_bp_cmpxchg_pointer_sym")
+void *rcu_cmpxchg_pointer_sym_bp();
 
 DEFINE_RCU_FLAVOR(rcu_flavor);
+DEFINE_RCU_FLAVOR_ALIAS(rcu_flavor, alias_rcu_flavor);
 
 #include "urcu-call-rcu-impl.h"
 #include "urcu-defer-impl.h"
