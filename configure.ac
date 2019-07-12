@@ -1,9 +1,9 @@
 AC_PREREQ(2.59)
-AC_INIT([userspace-rcu],[0.10.2],[mathieu dot desnoyers at efficios dot com], [], [http://liburcu.org/])
+AC_INIT([userspace-rcu],[0.11.1],[mathieu dot desnoyers at efficios dot com], [], [http://liburcu.org/])
 
 # Following the numbering scheme proposed by libtool for the library version
 # http://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.html
-AC_SUBST([URCU_LIBRARY_VERSION], [6:0:0])
+AC_SUBST([URCU_LIBRARY_VERSION], [7:0:1])
 
 AC_CONFIG_HEADERS([include/config.h include/urcu/config.h])
 AC_CONFIG_AUX_DIR([config])
@@ -18,6 +18,8 @@ AM_MAINTAINER_MODE([enable])
 # Enable silent rules if available (Introduced in AM 1.11)
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
+AC_REQUIRE_AUX_FILE([tap-driver.sh])
+
 AH_TEMPLATE([CONFIG_RCU_SMP], [Enable SMP support. With SMP support enabled, uniprocessors are also supported. With SMP support disabled, UP systems work fine, but the behavior of SMP systems is undefined.])
 AH_TEMPLATE([CONFIG_RCU_HAVE_FENCE], [Defined when on a system that has memory fence instructions.])
 AH_TEMPLATE([CONFIG_RCU_HAVE_FUTEX], [Defined when on a system with futex support.])
@@ -27,6 +29,7 @@ AH_TEMPLATE([CONFIG_RCU_TLS], [TLS provided by the compiler.])
 AH_TEMPLATE([CONFIG_RCU_HAVE_CLOCK_GETTIME], [clock_gettime() is detected.])
 AH_TEMPLATE([CONFIG_RCU_FORCE_SYS_MEMBARRIER], [Require the operating system to support the membarrier system call for default and bulletproof flavors.])
 AH_TEMPLATE([CONFIG_RCU_DEBUG], [Enable internal debugging self-checks. Introduce performance penalty.])
+AH_TEMPLATE([CONFIG_CDS_LFHT_ITER_DEBUG], [Enable extra debugging checks for lock-free hash table iterator traversal. Alters the rculfhash ABI. Make sure to compile both library and application with matching configuration.])
 
 # Allow requiring the operating system to support the membarrier system
 # call. Applies to default and bulletproof flavors.
@@ -42,6 +45,11 @@ AC_ARG_ENABLE([compiler-tls],
 	[def_compiler_tls=$enableval],
 	[def_compiler_tls="yes"])
 
+# Checks for C compiler
+AC_USE_SYSTEM_EXTENSIONS
+AC_PROG_CC
+AC_PROG_CC_STDC
+
 # If not overridden, use ax_tls.m4 to check if TLS is available.
 AS_IF([test "x$def_compiler_tls" = "xyes"],
 	[AX_TLS([def_tls_detect=$ac_cv_tls], [:])],
@@ -50,11 +58,6 @@ AS_IF([test "x$def_compiler_tls" = "xyes"],
 AS_IF([test "x$def_tls_detect" = "x"],
 	[:],
 	[AC_DEFINE_UNQUOTED([CONFIG_RCU_TLS], $def_tls_detect)])
-
-# Checks for C compiler
-AC_USE_SYSTEM_EXTENSIONS
-AC_PROG_CC
-AC_PROG_CC_STDC
 
 # Checks for programs.
 AC_PROG_AWK
@@ -149,6 +152,7 @@ AS_CASE([$host_cpu],
 	[tile*], [ARCHTYPE="tile"],
 	[hppa*], [ARCHTYPE="hppa"],
 	[m68k], [ARCHTYPE="m68k"],
+	[riscv*], [ARCHTYPE="riscv"],
 	[ARCHTYPE="unknown"]
 )
 
@@ -265,6 +269,13 @@ AS_IF([test "x$enable_rcu_debug" = "xyes"], [
        AC_DEFINE([CONFIG_RCU_DEBUG], [1])
 ])
 
+# rculfhash iterator debugging
+AC_ARG_ENABLE([cds-lfht-iter-debug],
+      AS_HELP_STRING([--enable-cds-lfht-iter-debug], [Enable extra debugging checks for lock-free hash table iterator traversal. Alters the rculfhash ABI. Make sure to compile both library and application with matching configuration.]))
+AS_IF([test "x$enable_cds_lfht_iter_debug" = "xyes"], [
+       AC_DEFINE([CONFIG_CDS_LFHT_ITER_DEBUG], [1])
+])
+
 # From the sched_setaffinity(2)'s man page:
 # ~~~~
 # The CPU affinity system calls were introduced in Linux kernel 2.5.8.
@@ -370,7 +381,7 @@ AC_CHECK_FUNCS([sched_setaffinity],[
 AM_CPPFLAGS="-include config.h"
 AC_SUBST(AM_CPPFLAGS)
 
-AM_CFLAGS="-Wall $AM_CFLAGS"
+AM_CFLAGS="-Wall -Wextra -Wno-unused-parameter $AM_CFLAGS"
 AC_SUBST(AM_CFLAGS)
 
 AC_CONFIG_LINKS([
@@ -388,7 +399,6 @@ AC_CONFIG_FILES([
 	tests/unit/Makefile
 	tests/benchmark/Makefile
 	tests/regression/Makefile
-	tests/regression/regression_tests
 	tests/utils/Makefile
 	src/liburcu.pc
 	src/liburcu-bp.pc
@@ -397,6 +407,69 @@ AC_CONFIG_FILES([
 	src/liburcu-mb.pc
 	src/liburcu-signal.pc
 ])
+
+AC_CONFIG_FILES([tests/regression/rcutorture_urcu_bp_perf_global.tap], [chmod +x tests/regression/rcutorture_urcu_bp_perf_global.tap])
+AC_CONFIG_FILES([tests/regression/rcutorture_urcu_bp_perf_percpu.tap], [chmod +x tests/regression/rcutorture_urcu_bp_perf_percpu.tap])
+AC_CONFIG_FILES([tests/regression/rcutorture_urcu_bp_perf_perthread.tap], [chmod +x tests/regression/rcutorture_urcu_bp_perf_perthread.tap])
+AC_CONFIG_FILES([tests/regression/rcutorture_urcu_bp_rperf_global.tap], [chmod +x tests/regression/rcutorture_urcu_bp_rperf_global.tap])
+AC_CONFIG_FILES([tests/regression/rcutorture_urcu_bp_rperf_percpu.tap], [chmod +x tests/regression/rcutorture_urcu_bp_rperf_percpu.tap])
+AC_CONFIG_FILES([tests/regression/rcutorture_urcu_bp_rperf_perthread.tap], [chmod +x tests/regression/rcutorture_urcu_bp_rperf_perthread.tap])
+AC_CONFIG_FILES([tests/regression/rcutorture_urcu_bp_stress_global.tap], [chmod +x tests/regression/rcutorture_urcu_bp_stress_global.tap])
+AC_CONFIG_FILES([tests/regression/rcutorture_urcu_bp_stress_percpu.tap], [chmod +x tests/regression/rcutorture_urcu_bp_stress_percpu.tap])
+AC_CONFIG_FILES([tests/regression/rcutorture_urcu_bp_stress_perthread.tap], [chmod +x tests/regression/rcutorture_urcu_bp_stress_perthread.tap])
+AC_CONFIG_FILES([tests/regression/rcutorture_urcu_bp_uperf_global.tap], [chmod +x tests/regression/rcutorture_urcu_bp_uperf_global.tap])
+AC_CONFIG_FILES([tests/regression/rcutorture_urcu_bp_uperf_percpu.tap], [chmod +x tests/regression/rcutorture_urcu_bp_uperf_percpu.tap])
+AC_CONFIG_FILES([tests/regression/rcutorture_urcu_bp_uperf_perthread.tap], [chmod +x tests/regression/rcutorture_urcu_bp_uperf_perthread.tap])
+AC_CONFIG_FILES([tests/regression/rcutorture_urcu_mb_perf_global.tap], [chmod +x tests/regression/rcutorture_urcu_mb_perf_global.tap])
+AC_CONFIG_FILES([tests/regression/rcutorture_urcu_mb_perf_percpu.tap], [chmod +x tests/regression/rcutorture_urcu_mb_perf_percpu.tap])
+AC_CONFIG_FILES([tests/regression/rcutorture_urcu_mb_perf_perthread.tap], [chmod +x tests/regression/rcutorture_urcu_mb_perf_perthread.tap])
+AC_CONFIG_FILES([tests/regression/rcutorture_urcu_mb_rperf_global.tap], [chmod +x tests/regression/rcutorture_urcu_mb_rperf_global.tap])
+AC_CONFIG_FILES([tests/regression/rcutorture_urcu_mb_rperf_percpu.tap], [chmod +x tests/regression/rcutorture_urcu_mb_rperf_percpu.tap])
+AC_CONFIG_FILES([tests/regression/rcutorture_urcu_mb_rperf_perthread.tap], [chmod +x tests/regression/rcutorture_urcu_mb_rperf_perthread.tap])
+AC_CONFIG_FILES([tests/regression/rcutorture_urcu_mb_stress_global.tap], [chmod +x tests/regression/rcutorture_urcu_mb_stress_global.tap])
+AC_CONFIG_FILES([tests/regression/rcutorture_urcu_mb_stress_percpu.tap], [chmod +x tests/regression/rcutorture_urcu_mb_stress_percpu.tap])
+AC_CONFIG_FILES([tests/regression/rcutorture_urcu_mb_stress_perthread.tap], [chmod +x tests/regression/rcutorture_urcu_mb_stress_perthread.tap])
+AC_CONFIG_FILES([tests/regression/rcutorture_urcu_mb_uperf_global.tap], [chmod +x tests/regression/rcutorture_urcu_mb_uperf_global.tap])
+AC_CONFIG_FILES([tests/regression/rcutorture_urcu_mb_uperf_percpu.tap], [chmod +x tests/regression/rcutorture_urcu_mb_uperf_percpu.tap])
+AC_CONFIG_FILES([tests/regression/rcutorture_urcu_mb_uperf_perthread.tap], [chmod +x tests/regression/rcutorture_urcu_mb_uperf_perthread.tap])
+AC_CONFIG_FILES([tests/regression/rcutorture_urcu_membarrier_perf_global.tap], [chmod +x tests/regression/rcutorture_urcu_membarrier_perf_global.tap])
+AC_CONFIG_FILES([tests/regression/rcutorture_urcu_membarrier_perf_percpu.tap], [chmod +x tests/regression/rcutorture_urcu_membarrier_perf_percpu.tap])
+AC_CONFIG_FILES([tests/regression/rcutorture_urcu_membarrier_perf_perthread.tap], [chmod +x tests/regression/rcutorture_urcu_membarrier_perf_perthread.tap])
+AC_CONFIG_FILES([tests/regression/rcutorture_urcu_membarrier_rperf_global.tap], [chmod +x tests/regression/rcutorture_urcu_membarrier_rperf_global.tap])
+AC_CONFIG_FILES([tests/regression/rcutorture_urcu_membarrier_rperf_percpu.tap], [chmod +x tests/regression/rcutorture_urcu_membarrier_rperf_percpu.tap])
+AC_CONFIG_FILES([tests/regression/rcutorture_urcu_membarrier_rperf_perthread.tap], [chmod +x tests/regression/rcutorture_urcu_membarrier_rperf_perthread.tap])
+AC_CONFIG_FILES([tests/regression/rcutorture_urcu_membarrier_stress_global.tap], [chmod +x tests/regression/rcutorture_urcu_membarrier_stress_global.tap])
+AC_CONFIG_FILES([tests/regression/rcutorture_urcu_membarrier_stress_percpu.tap], [chmod +x tests/regression/rcutorture_urcu_membarrier_stress_percpu.tap])
+AC_CONFIG_FILES([tests/regression/rcutorture_urcu_membarrier_stress_perthread.tap], [chmod +x tests/regression/rcutorture_urcu_membarrier_stress_perthread.tap])
+AC_CONFIG_FILES([tests/regression/rcutorture_urcu_membarrier_uperf_global.tap], [chmod +x tests/regression/rcutorture_urcu_membarrier_uperf_global.tap])
+AC_CONFIG_FILES([tests/regression/rcutorture_urcu_membarrier_uperf_percpu.tap], [chmod +x tests/regression/rcutorture_urcu_membarrier_uperf_percpu.tap])
+AC_CONFIG_FILES([tests/regression/rcutorture_urcu_membarrier_uperf_perthread.tap], [chmod +x tests/regression/rcutorture_urcu_membarrier_uperf_perthread.tap])
+AC_CONFIG_FILES([tests/regression/rcutorture_urcu_qsbr_perf_global.tap], [chmod +x tests/regression/rcutorture_urcu_qsbr_perf_global.tap])
+AC_CONFIG_FILES([tests/regression/rcutorture_urcu_qsbr_perf_percpu.tap], [chmod +x tests/regression/rcutorture_urcu_qsbr_perf_percpu.tap])
+AC_CONFIG_FILES([tests/regression/rcutorture_urcu_qsbr_perf_perthread.tap], [chmod +x tests/regression/rcutorture_urcu_qsbr_perf_perthread.tap])
+AC_CONFIG_FILES([tests/regression/rcutorture_urcu_qsbr_rperf_global.tap], [chmod +x tests/regression/rcutorture_urcu_qsbr_rperf_global.tap])
+AC_CONFIG_FILES([tests/regression/rcutorture_urcu_qsbr_rperf_percpu.tap], [chmod +x tests/regression/rcutorture_urcu_qsbr_rperf_percpu.tap])
+AC_CONFIG_FILES([tests/regression/rcutorture_urcu_qsbr_rperf_perthread.tap], [chmod +x tests/regression/rcutorture_urcu_qsbr_rperf_perthread.tap])
+AC_CONFIG_FILES([tests/regression/rcutorture_urcu_qsbr_stress_global.tap], [chmod +x tests/regression/rcutorture_urcu_qsbr_stress_global.tap])
+AC_CONFIG_FILES([tests/regression/rcutorture_urcu_qsbr_stress_percpu.tap], [chmod +x tests/regression/rcutorture_urcu_qsbr_stress_percpu.tap])
+AC_CONFIG_FILES([tests/regression/rcutorture_urcu_qsbr_stress_perthread.tap], [chmod +x tests/regression/rcutorture_urcu_qsbr_stress_perthread.tap])
+AC_CONFIG_FILES([tests/regression/rcutorture_urcu_qsbr_uperf_global.tap], [chmod +x tests/regression/rcutorture_urcu_qsbr_uperf_global.tap])
+AC_CONFIG_FILES([tests/regression/rcutorture_urcu_qsbr_uperf_percpu.tap], [chmod +x tests/regression/rcutorture_urcu_qsbr_uperf_percpu.tap])
+AC_CONFIG_FILES([tests/regression/rcutorture_urcu_qsbr_uperf_perthread.tap], [chmod +x tests/regression/rcutorture_urcu_qsbr_uperf_perthread.tap])
+AC_CONFIG_FILES([tests/regression/rcutorture_urcu_signal_perf_global.tap], [chmod +x tests/regression/rcutorture_urcu_signal_perf_global.tap])
+AC_CONFIG_FILES([tests/regression/rcutorture_urcu_signal_perf_percpu.tap], [chmod +x tests/regression/rcutorture_urcu_signal_perf_percpu.tap])
+AC_CONFIG_FILES([tests/regression/rcutorture_urcu_signal_perf_perthread.tap], [chmod +x tests/regression/rcutorture_urcu_signal_perf_perthread.tap])
+AC_CONFIG_FILES([tests/regression/rcutorture_urcu_signal_rperf_global.tap], [chmod +x tests/regression/rcutorture_urcu_signal_rperf_global.tap])
+AC_CONFIG_FILES([tests/regression/rcutorture_urcu_signal_rperf_percpu.tap], [chmod +x tests/regression/rcutorture_urcu_signal_rperf_percpu.tap])
+AC_CONFIG_FILES([tests/regression/rcutorture_urcu_signal_rperf_perthread.tap], [chmod +x tests/regression/rcutorture_urcu_signal_rperf_perthread.tap])
+AC_CONFIG_FILES([tests/regression/rcutorture_urcu_signal_stress_global.tap], [chmod +x tests/regression/rcutorture_urcu_signal_stress_global.tap])
+AC_CONFIG_FILES([tests/regression/rcutorture_urcu_signal_stress_percpu.tap], [chmod +x tests/regression/rcutorture_urcu_signal_stress_percpu.tap])
+AC_CONFIG_FILES([tests/regression/rcutorture_urcu_signal_stress_perthread.tap], [chmod +x tests/regression/rcutorture_urcu_signal_stress_perthread.tap])
+AC_CONFIG_FILES([tests/regression/rcutorture_urcu_signal_uperf_global.tap], [chmod +x tests/regression/rcutorture_urcu_signal_uperf_global.tap])
+AC_CONFIG_FILES([tests/regression/rcutorture_urcu_signal_uperf_percpu.tap], [chmod +x tests/regression/rcutorture_urcu_signal_uperf_percpu.tap])
+AC_CONFIG_FILES([tests/regression/rcutorture_urcu_signal_uperf_perthread.tap], [chmod +x tests/regression/rcutorture_urcu_signal_uperf_perthread.tap])
+
+
 AC_OUTPUT
 
 #
@@ -442,6 +515,12 @@ PPRINT_PROP_BOOL([Require membarrier], $value)
 # RCU debug enabled/disabled
 test "x$enable_rcu_debug" = "xyes" && value=1 || value=0
 PPRINT_PROP_BOOL([Internal debugging], $value)
+
+# rculfhash iterator debug enabled/disabled
+test "x$enable_cds_lfht_iter_debug" = "xyes" && value=1 || value=0
+PPRINT_PROP_BOOL([Lock-free hash table iterator debugging], $value)
+
+PPRINT_PROP_BOOL([Multi-flavor support], 1)
 
 report_bindir="`eval eval echo $bindir`"
 report_libdir="`eval eval echo $libdir`"

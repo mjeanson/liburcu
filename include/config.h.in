@@ -1,5 +1,10 @@
 /* include/config.h.in.  Generated from configure.ac by autoheader.  */
 
+/* Enable extra debugging checks for lock-free hash table iterator traversal.
+   Alters the rculfhash ABI. Make sure to compile both library and application
+   with matching configuration. */
+#undef CONFIG_CDS_LFHT_ITER_DEBUG
+
 /* Use the dmb instruction if available for use on ARM. */
 #undef CONFIG_RCU_ARM_HAVE_DMB
 

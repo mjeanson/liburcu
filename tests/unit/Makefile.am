@@ -1,12 +1,16 @@
 AM_CFLAGS += -I$(top_srcdir)/include -I$(top_builddir)/include -I$(top_srcdir)/src -I$(top_srcdir)/tests/utils -I$(top_srcdir)/tests/common -g
 
-SCRIPT_LIST = test_loop run.sh unit_tests
+LOG_DRIVER_FLAGS = --merge --comments
+LOG_DRIVER = env AM_TAP_AWK='$(AWK)' $(SHELL) \
+	$(top_srcdir)/config/tap-driver.sh
 
 noinst_PROGRAMS = test_uatomic \
 	test_urcu_multiflavor \
-	test_urcu_multiflavor_dynlink
+	test_urcu_multiflavor_dynlink \
+	test_urcu_multiflavor_single_unit \
+	test_urcu_multiflavor_single_unit_dynlink
 
-dist_noinst_SCRIPTS = $(SCRIPT_LIST)
+TESTS = $(noinst_PROGRAMS)
 
 noinst_HEADERS = test_urcu_multiflavor.h
 
@@ -41,6 +45,15 @@ test_urcu_multiflavor_dynlink_CFLAGS = -DDYNAMIC_LINK_TEST $(AM_CFLAGS)
 test_urcu_multiflavor_dynlink_LDADD = $(URCU_LIB) $(URCU_MB_LIB) \
 	$(URCU_SIGNAL_LIB) $(URCU_QSBR_LIB) $(URCU_BP_LIB) $(TAP_LIB)
 
+test_urcu_multiflavor_single_unit_SOURCES = test_urcu_multiflavor_single_unit.c
+test_urcu_multiflavor_single_unit_LDADD = $(URCU_LIB) $(URCU_MB_LIB) \
+	$(URCU_SIGNAL_LIB) $(URCU_QSBR_LIB) $(URCU_BP_LIB) $(TAP_LIB)
+
+test_urcu_multiflavor_single_unit_dynlink_SOURCES = test_urcu_multiflavor_single_unit.c
+test_urcu_multiflavor_single_unit_dynlink_CFLAGS = -DDYNAMIC_LINK_TEST $(AM_CFLAGS)
+test_urcu_multiflavor_single_unit_dynlink_LDADD = $(URCU_LIB) $(URCU_MB_LIB) \
+	$(URCU_SIGNAL_LIB) $(URCU_QSBR_LIB) $(URCU_BP_LIB) $(TAP_LIB)
+
 all-local:
 	@if [ x"$(srcdir)" != x"$(builddir)" ]; then \
 		for script in $(SCRIPT_LIST); do \
@@ -55,5 +68,3 @@ clean-local:
 		done; \
 	fi
 
-check-am:
-	./run.sh unit_tests
