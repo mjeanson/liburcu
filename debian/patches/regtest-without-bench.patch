@@ -2,25 +2,29 @@ Remove the benchmarks from the regtest target, they timeout on the buildds.
 
 --- a/tests/benchmark/Makefile.am
 +++ b/tests/benchmark/Makefile.am
-@@ -226,13 +226,10 @@
+@@ -232,7 +232,7 @@
  		done; \
  	fi
  
 -.PHONY: short_bench long_bench regtest
 +.PHONY: short_bench long_bench
  
- short_bench:
- 	./run.sh short_bench_tests
+ # This empty variable is required to enable the TAP test suite for custom
+ # targets like 'regtest' while keeping the default 'check' a noop.
+@@ -247,6 +247,3 @@
  
  long_bench:
- 	./run.sh long_bench_tests
+ 	$(MAKE) $(AM_MAKEFLAGS) check TESTS="$(LONG_BENCH_TESTS)"
 -
 -regtest:
--	./run.sh regression_tests
+-	$(MAKE) $(AM_MAKEFLAGS) check TESTS="$(REGTEST_TESTS)"
 --- a/tests/Makefile.am
 +++ b/tests/Makefile.am
-@@ -8,4 +8,3 @@
+@@ -8,7 +8,6 @@
  	cd benchmark && $(MAKE) $(AM_MAKEFLAGS) long_bench
  regtest:
  	cd regression && $(MAKE) $(AM_MAKEFLAGS) regtest
 -	cd benchmark && $(MAKE) $(AM_MAKEFLAGS) regtest
+ 
+ check-loop:
+ 	while [ 0 ]; do \
