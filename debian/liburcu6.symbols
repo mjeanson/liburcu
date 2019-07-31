@@ -1,6 +1,7 @@
 liburcu-bp.so.6 liburcu6 #MINVER#
 * Build-Depends-Package: liburcu-dev
  (arch=m68k,riscv64)__tls_access_rcu_reader_bp@Base 0.10.0
+ (arch=m68k,riscv64)__tls_access_urcu_bp_reader@Base 0.11.1
  __urcu_compat_futex_cond@Base 0.10.0
  __urcu_compat_futex_lock@Base 0.10.0
  call_rcu_after_fork_child_bp@Base 0.10.0
@@ -77,7 +78,7 @@ liburcu-bp.so.6 liburcu6 #MINVER#
  urcu_bp_read_lock@Base 0.11.1
  urcu_bp_read_ongoing@Base 0.11.1
  urcu_bp_read_unlock@Base 0.11.1
- urcu_bp_reader@Base 0.11.1
+ (arch=!m68k,!riscv64)urcu_bp_reader@Base 0.11.1
  urcu_bp_register@Base 0.11.1
  urcu_bp_register_rculfhash_atfork@Base 0.11.1
  urcu_bp_set_cpu_call_rcu_data@Base 0.11.1
@@ -201,6 +202,7 @@ liburcu-common.so.6 liburcu6 #MINVER#
 liburcu-mb.so.6 liburcu6 #MINVER#
 * Build-Depends-Package: liburcu-dev
  (arch=m68k,riscv64)__tls_access_rcu_reader_mb@Base 0.10.0
+ (arch=m68k,riscv64)__tls_access_urcu_mb_reader@Base 0.11.1
  __urcu_compat_futex_cond@Base 0.10.0
  __urcu_compat_futex_lock@Base 0.10.0
  call_rcu_after_fork_child_mb@Base 0.10.0
@@ -267,7 +269,7 @@ liburcu-mb.so.6 liburcu6 #MINVER#
  urcu_mb_read_lock@Base 0.11.1
  urcu_mb_read_ongoing@Base 0.11.1
  urcu_mb_read_unlock@Base 0.11.1
- urcu_mb_reader@Base 0.11.1
+ (arch=!m68k,!riscv64)urcu_mb_reader@Base 0.11.1
  urcu_mb_register_rculfhash_atfork@Base 0.11.1
  urcu_mb_register_thread@Base 0.11.1
  urcu_mb_set_cpu_call_rcu_data@Base 0.11.1
@@ -278,6 +280,8 @@ liburcu-mb.so.6 liburcu6 #MINVER#
  urcu_register_rculfhash_atfork_mb@Base 0.10.0
  urcu_unregister_rculfhash_atfork_mb@Base 0.10.0
 liburcu-memb.so.6 liburcu6 #MINVER#
+ (arch=m68k,riscv64)__tls_access_rcu_reader_memb@Base 0.11.1
+ (arch=m68k,riscv64)__tls_access_urcu_memb_reader@Base 0.11.1
  __urcu_compat_futex_cond@Base 0.11.1
  __urcu_compat_futex_lock@Base 0.11.1
  call_rcu_after_fork_child_memb@Base 0.11.1
@@ -311,7 +315,7 @@ liburcu-memb.so.6 liburcu6 #MINVER#
  rcu_read_lock_memb@Base 0.11.1
  rcu_read_ongoing_memb@Base 0.11.1
  rcu_read_unlock_memb@Base 0.11.1
- rcu_reader_memb@Base 0.11.1
+ (arch=!m68k,!riscv64)rcu_reader_memb@Base 0.11.1
  rcu_register_thread_memb@Base 0.11.1
  rcu_set_pointer_sym@Base 0.11.1
  rcu_unregister_thread_memb@Base 0.11.1
@@ -346,7 +350,7 @@ liburcu-memb.so.6 liburcu6 #MINVER#
  urcu_memb_read_lock@Base 0.11.1
  urcu_memb_read_ongoing@Base 0.11.1
  urcu_memb_read_unlock@Base 0.11.1
- urcu_memb_reader@Base 0.11.1
+ (arch=!m68k,!riscv64)urcu_memb_reader@Base 0.11.1
  urcu_memb_register_rculfhash_atfork@Base 0.11.1
  urcu_memb_register_thread@Base 0.11.1
  urcu_memb_set_cpu_call_rcu_data@Base 0.11.1
@@ -359,6 +363,7 @@ liburcu-memb.so.6 liburcu6 #MINVER#
 liburcu-qsbr.so.6 liburcu6 #MINVER#
 * Build-Depends-Package: liburcu-dev
  (arch=m68k,riscv64)__tls_access_rcu_reader_qsbr@Base 0.10.0
+ (arch=m68k,riscv64)__tls_access_urcu_qsbr_reader@Base 0.11.1
  __urcu_compat_futex_cond@Base 0.10.0
  __urcu_compat_futex_lock@Base 0.10.0
  call_rcu_after_fork_child_qsbr@Base 0.10.0
@@ -429,7 +434,7 @@ liburcu-qsbr.so.6 liburcu6 #MINVER#
  urcu_qsbr_read_lock@Base 0.11.1
  urcu_qsbr_read_ongoing@Base 0.11.1
  urcu_qsbr_read_unlock@Base 0.11.1
- urcu_qsbr_reader@Base 0.11.1
+ (arch=!m68k,!riscv64)urcu_qsbr_reader@Base 0.11.1
  urcu_qsbr_register_rculfhash_atfork@Base 0.11.1
  urcu_qsbr_register_thread@Base 0.11.1
  urcu_qsbr_set_cpu_call_rcu_data@Base 0.11.1
@@ -444,6 +449,7 @@ liburcu-qsbr.so.6 liburcu6 #MINVER#
 liburcu-signal.so.6 liburcu6 #MINVER#
 * Build-Depends-Package: liburcu-dev
  (arch=m68k,riscv64)__tls_access_rcu_reader_sig@Base 0.10.0
+ (arch=m68k,riscv64)__tls_access_urcu_signal_reader@Base 0.11.1
  __urcu_compat_futex_cond@Base 0.10.0
  __urcu_compat_futex_lock@Base 0.10.0
  call_rcu_after_fork_child_sig@Base 0.10.0
@@ -513,7 +519,7 @@ liburcu-signal.so.6 liburcu6 #MINVER#
  urcu_signal_read_lock@Base 0.11.1
  urcu_signal_read_ongoing@Base 0.11.1
  urcu_signal_read_unlock@Base 0.11.1
- urcu_signal_reader@Base 0.11.1
+ (arch=!m68k,!riscv64)urcu_signal_reader@Base 0.11.1
  urcu_signal_register_rculfhash_atfork@Base 0.11.1
  urcu_signal_register_thread@Base 0.11.1
  urcu_signal_set_cpu_call_rcu_data@Base 0.11.1
@@ -525,6 +531,7 @@ liburcu-signal.so.6 liburcu6 #MINVER#
 liburcu.so.6 liburcu6 #MINVER#
 * Build-Depends-Package: liburcu-dev
  (arch=m68k,riscv64)__tls_access_rcu_reader_memb@Base 0.10.0
+ (arch=m68k,riscv64)__tls_access_urcu_memb_reader@Base 0.11.1
  __urcu_compat_futex_cond@Base 0.10.0
  __urcu_compat_futex_lock@Base 0.10.0
  call_rcu_after_fork_child_memb@Base 0.10.0
@@ -593,7 +600,7 @@ liburcu.so.6 liburcu6 #MINVER#
  urcu_memb_read_lock@Base 0.11.1
  urcu_memb_read_ongoing@Base 0.11.1
  urcu_memb_read_unlock@Base 0.11.1
- urcu_memb_reader@Base 0.11.1
+ (arch=!m68k,!riscv64)urcu_memb_reader@Base 0.11.1
  urcu_memb_register_rculfhash_atfork@Base 0.11.1
  urcu_memb_register_thread@Base 0.11.1
  urcu_memb_set_cpu_call_rcu_data@Base 0.11.1
