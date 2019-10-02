@@ -1,3 +1,9 @@
+liburcu (0.11.1-2~ubuntu16.04.1) xenial; urgency=medium
+
+  * [d3fde80] Update gbp config for xenial
+
+ -- Michael Jeanson <mjeanson@debian.org>  Wed, 02 Oct 2019 15:29:30 -0400
+
 liburcu (0.11.1-2) unstable; urgency=medium
 
   * [0e610a7] Update liburcu6 symbols for risv64 and m68k
