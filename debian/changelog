@@ -1,3 +1,9 @@
+liburcu (0.11.1-2~ubuntu18.04.1) bionic; urgency=medium
+
+  * [7d14b7f] Update gbp config for bionic
+
+ -- Michael Jeanson <mjeanson@debian.org>  Wed, 02 Oct 2019 14:49:29 -0400
+
 liburcu (0.11.1-2) unstable; urgency=medium
 
   * [0e610a7] Update liburcu6 symbols for risv64 and m68k
