@@ -273,6 +273,7 @@
 #include <urcu/uatomic.h>
 #include <urcu/compiler.h>
 #include <urcu/rculfhash.h>
+#include <urcu/static/urcu-signal-nr.h>
 #include <rculfhash-internal.h>
 #include <stdio.h>
 #include <pthread.h>
@@ -825,7 +826,7 @@ struct cds_lfht_node *clear_flag(struct cds_lfht_node *node)
 }
 
 static
-int is_removed(struct cds_lfht_node *node)
+int is_removed(const struct cds_lfht_node *node)
 {
 	return ((unsigned long) node) & REMOVED_FLAG;
 }
@@ -1829,7 +1830,7 @@ int cds_lfht_del(struct cds_lfht *ht, struct cds_lfht_node *node)
 	return ret;
 }
 
-int cds_lfht_is_node_deleted(struct cds_lfht_node *node)
+int cds_lfht_is_node_deleted(const struct cds_lfht_node *node)
 {
 	return is_removed(CMM_LOAD_SHARED(node->next));
 }
@@ -2151,18 +2152,24 @@ static struct urcu_atfork cds_lfht_atfork = {
 	.after_fork_child = cds_lfht_after_fork_child,
 };
 
-/* Block all signals to ensure we don't disturb the application. */
+/*
+ * Block all signals for the workqueue worker thread to ensure we don't
+ * disturb the application. The SIGRCU signal needs to be unblocked for
+ * the urcu-signal flavor.
+ */
 static void cds_lfht_worker_init(struct urcu_workqueue *workqueue,
 		void *priv)
 {
 	int ret;
 	sigset_t mask;
 
-	/* Block signal for entire process, so only our thread processes it. */
 	ret = sigfillset(&mask);
 	if (ret)
 		urcu_die(errno);
-	ret = pthread_sigmask(SIG_BLOCK, &mask, NULL);
+	ret = sigdelset(&mask, SIGRCU);
+	if (ret)
+		urcu_die(errno);
+	ret = pthread_sigmask(SIG_SETMASK, &mask, NULL);
 	if (ret)
 		urcu_die(ret);
 }

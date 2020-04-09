@@ -1,5 +1,5 @@
 AC_PREREQ(2.59)
-AC_INIT([userspace-rcu],[0.11.1],[mathieu dot desnoyers at efficios dot com], [], [http://liburcu.org/])
+AC_INIT([userspace-rcu],[0.12.0],[mathieu dot desnoyers at efficios dot com], [], [http://liburcu.org/])
 
 # Following the numbering scheme proposed by libtool for the library version
 # http://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.html
@@ -12,7 +12,7 @@ AC_CONFIG_MACRO_DIR([m4])
 AC_CANONICAL_TARGET
 AC_CANONICAL_HOST
 
-AM_INIT_AUTOMAKE([foreign dist-bzip2 no-dist-gzip nostdinc])
+AM_INIT_AUTOMAKE([1.12 foreign dist-bzip2 no-dist-gzip nostdinc])
 AM_MAINTAINER_MODE([enable])
 
 # Enable silent rules if available (Introduced in AM 1.11)
@@ -332,7 +332,7 @@ AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
 		#include <sched.h>
 		int main()
 		{
-			cpu_set_t foo, mask; CPU_SET(0, &foo);
+			cpu_set_t foo; CPU_SET(0, &foo);
 			return 0;
 		}
 	]])
