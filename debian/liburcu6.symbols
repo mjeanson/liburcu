@@ -81,6 +81,7 @@ liburcu-bp.so.6 liburcu6 #MINVER#
  (arch=!m68k,!riscv64)urcu_bp_reader@Base 0.11.1
  urcu_bp_register@Base 0.11.1
  urcu_bp_register_rculfhash_atfork@Base 0.11.1
+ urcu_bp_register_thread@Base 0.12.0
  urcu_bp_set_cpu_call_rcu_data@Base 0.11.1
  urcu_bp_set_pointer_sym@Base 0.11.1
  urcu_bp_set_thread_call_rcu_data@Base 0.11.1
