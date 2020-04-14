@@ -1,3 +1,9 @@
+liburcu (0.12.0-1~ubuntu20.04.1) focal; urgency=medium
+
+  * Source backport to focal
+
+ -- Michael Jeanson <mjeanson@debian.org>  Tue, 14 Apr 2020 16:35:41 -0400
+
 liburcu (0.12.0-1) unstable; urgency=medium
 
   * [bd5bcee] New upstream version 0.12.0
