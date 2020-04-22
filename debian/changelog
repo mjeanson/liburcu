@@ -1,3 +1,14 @@
+liburcu (0.12.1-1~ubuntu20.04.1) focal; urgency=medium
+
+  * [f19d422] New upstream version 0.12.1
+  * [6f7e321] Update d/copyright
+  * [b46d9a4] Add Rules-Requires-Root to d/control
+  * [462644a] Use secure URI in Homepage field.
+  * [db9578a] Set field Upstream-Name in debian/copyright.
+  * [380c52d] Add upstream metadata file
+
+ -- Michael Jeanson <mjeanson@debian.org>  Wed, 22 Apr 2020 11:30:26 -0400
+
 liburcu (0.12.0-1~ubuntu20.04.2) focal; urgency=medium
 
   * Rebuild
