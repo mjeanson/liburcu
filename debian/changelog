@@ -1,3 +1,14 @@
+liburcu (0.12.1-1~ubuntu18.04.1) bionic; urgency=medium
+
+  * [f19d422] New upstream version 0.12.1
+  * [d44ccde] Update d/copyright
+  * [0ab31b8] Add Rules-Requires-Root to d/control
+  * [06a2641] Use secure URI in Homepage field.
+  * [e743a70] Set field Upstream-Name in debian/copyright.
+  * [c2e214f] Add upstream metadata file
+
+ -- Michael Jeanson <mjeanson@debian.org>  Wed, 22 Apr 2020 12:01:05 -0400
+
 liburcu (0.12.0-1~ubuntu18.04.2) bionic; urgency=medium
 
   * Rebuild
