@@ -1,3 +1,14 @@
+liburcu (0.12.1-1~ubuntu16.04.1) xenial; urgency=medium
+
+  * [f19d422] New upstream version 0.12.1
+  * [609c01e] Update d/copyright
+  * [79cc877] Add Rules-Requires-Root to d/control
+  * [38ac175] Use secure URI in Homepage field.
+  * [8e12fe6] Set field Upstream-Name in debian/copyright.
+  * [de6ac0e] Add upstream metadata file
+
+ -- Michael Jeanson <mjeanson@debian.org>  Wed, 22 Apr 2020 12:04:24 -0400
+
 liburcu (0.12.0-1~ubuntu16.04.1) xenial; urgency=medium
 
   * Source backport to xenial
