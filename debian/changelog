@@ -1,3 +1,14 @@
+liburcu (0.12.1-1) unstable; urgency=medium
+
+  * [f19d422] New upstream version 0.12.1
+  * [bee9757] Update d/copyright
+  * [c7a28ee] Add Rules-Requires-Root to d/control
+  * [fdee8a2] Use secure URI in Homepage field.
+  * [2740a26] Set field Upstream-Name in debian/copyright.
+  * [d07c705] Add upstream metadata file
+
+ -- Michael Jeanson <mjeanson@debian.org>  Wed, 22 Apr 2020 11:14:04 -0400
+
 liburcu (0.12.0-1) unstable; urgency=medium
 
   * [bd5bcee] New upstream version 0.12.0
