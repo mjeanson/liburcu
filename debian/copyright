@@ -214,11 +214,6 @@ Copyright: 2011, Daniel Richard G. <skunk@iSKUNK.ORG>
   2008, Steven G. Johnson <stevenj@alum.mit.edu>
 License: GPL-3+
 
-Files: m4/ax_tls.m4
-Copyright: 2010, Diego Elio Petteno` <flameeyes@gmail.com>
-  2008, Alan Woodland <ajw05@aber.ac.uk>
-License: GPL-3+
-
 Files: m4/libtool.m4
 Copyright: 1996-2001, 2003-2015, Free Software Foundation, Inc.
 License: GPL-2+
