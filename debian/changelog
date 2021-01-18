@@ -1,3 +1,9 @@
+liburcu (0.12.1-2) unstable; urgency=medium
+
+  * [b20aa24] Bump tests CPU limit to 4096 (Closes: #976920)
+
+ -- Michael Jeanson <mjeanson@debian.org>  Mon, 18 Jan 2021 14:52:41 -0500
+
 liburcu (0.12.1-1) unstable; urgency=medium
 
   * [f19d422] New upstream version 0.12.1
