@@ -1,0 +1,31 @@
+From 6401fc2af1cff840d39bc65ee3c7dbef088e3dc5 Mon Sep 17 00:00:00 2001
+From: Michael Jeanson <mjeanson@efficios.com>
+Date: Wed, 9 Dec 2020 12:05:31 -0500
+Subject: [PATCH] fix: bump tests thread limit to 4096
+
+Machines with more than 128 CPUs are becoming more common. A
+future-proof fix here would be to dynamically allocate the array, but in
+the meantime bump the limit to 4096 to fix the problem on a 160 CPUs
+ppc64el system where this was reported.
+
+Signed-off-by: Michael Jeanson <mjeanson@efficios.com>
+Cc: Paul E. McKenney <paulmck@kernel.org>
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+Change-Id: Ib3cb5d8cb4515e6f626be33c2685fa38cb081782
+---
+ tests/common/api.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/tests/common/api.h b/tests/common/api.h
+index 2b72ec5a..35a8037e 100644
+--- a/tests/common/api.h
++++ b/tests/common/api.h
+@@ -108,7 +108,7 @@ static void spin_unlock(spinlock_t *sp)
+ 
+ typedef pthread_t thread_id_t;
+ 
+-#define NR_THREADS 128
++#define NR_THREADS 4096
+ 
+ #define __THREAD_ID_MAP_EMPTY ((thread_id_t) 0)
+ #define __THREAD_ID_MAP_WAITING ((thread_id_t) 1)

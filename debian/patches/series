@@ -1,3 +1,4 @@
 include-sh4-arch.patch
 regtest-without-bench.patch
 disable-sys-futex-on-mips-and-hppa.patch
+6401fc2af1cff840d39bc65ee3c7dbef088e3dc5.patch
