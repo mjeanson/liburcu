@@ -10,7 +10,7 @@ Signed-off-by: Michael Jeanson <mjeanson@efficios.com>
 
 --- a/configure.ac
 +++ b/configure.ac
-@@ -238,11 +238,26 @@
+@@ -231,11 +231,26 @@
  	]])
  ],[
  	AC_MSG_RESULT([yes])
@@ -40,7 +40,7 @@ Signed-off-by: Michael Jeanson <mjeanson@efficios.com>
  ])
  
  # Search for clock_gettime
-@@ -251,7 +266,6 @@
+@@ -244,7 +259,6 @@
  	config_rcu_have_clock_gettime=yes
  ], [])
  
@@ -48,7 +48,7 @@ Signed-off-by: Michael Jeanson <mjeanson@efficios.com>
  AM_CONDITIONAL([COMPAT_ARCH], [test "x$SUBARCHTYPE" = "xx86compat"])
  AM_CONDITIONAL([NO_SHARED], [test "x$enable_shared" = "xno"])
  
-@@ -498,7 +512,7 @@
+@@ -491,7 +505,7 @@
  PPRINT_PROP_BOOL([Memory fence instructions], $value)
  
  # Futex support available
