@@ -2,7 +2,7 @@ Add sh4 to the list of supported architectures.
 
 --- a/configure.ac
 +++ b/configure.ac
-@@ -153,6 +153,7 @@
+@@ -146,6 +146,7 @@
  	[hppa*], [ARCHTYPE="hppa"],
  	[m68k], [ARCHTYPE="m68k"],
  	[riscv*], [ARCHTYPE="riscv"],
