@@ -1,4 +1,4 @@
-liburcu (0.12.2-1~ubuntu20.04.1) unstable; urgency=medium
+liburcu (0.12.2-1~ubuntu20.04.2) focal; urgency=medium
 
   * [2438e54] New upstream version 0.12.2
   * [5ac3a31] Refresh patches
