@@ -1,3 +1,10 @@
+liburcu (0.12.2-1~ubuntu20.04.1) unstable; urgency=medium
+
+  * [2438e54] New upstream version 0.12.2
+  * [5ac3a31] Refresh patches
+
+ -- Michael Jeanson <mjeanson@debian.org>  Thu, 18 Feb 2021 14:49:36 -0500
+
 liburcu (0.12.1-1~ubuntu20.04.1) focal; urgency=medium
 
   * [f19d422] New upstream version 0.12.1
