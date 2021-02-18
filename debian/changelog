@@ -1,3 +1,10 @@
+liburcu (0.12.2-1) unstable; urgency=medium
+
+  * [2438e54] New upstream version 0.12.2
+  * [fc4c1f7] Refresh patches
+
+ -- Michael Jeanson <mjeanson@debian.org>  Thu, 18 Feb 2021 14:36:34 -0500
+
 liburcu (0.12.1-2) unstable; urgency=medium
 
   * [b20aa24] Bump tests CPU limit to 4096 (Closes: #976920)
