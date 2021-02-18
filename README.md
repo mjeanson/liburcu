@@ -86,6 +86,8 @@ supported, with the following exceptions:
   - Alpha, ia64 and ARM architectures depend on GCC 4.x with atomic builtins
     support. For ARM this was introduced with GCC 4.4:
     http://gcc.gnu.org/gcc-4.4/changes.html.
+  - Linux aarch64 depends on GCC 5.1 or better because prior versions
+    perform unsafe access to deallocated stack.
 
 Clang version 3.0 (based on LLVM 3.0) is supported.
 
@@ -388,7 +390,7 @@ For always-on debugging self-checks:
 	./configure --enable-rcu-debug
 
 For fine grained enabling of debugging self-checks, build
-urserspace-rcu with DEBUG_RCU defined and compile dependent
+userspace-rcu with DEBUG_RCU defined and compile dependent
 applications with DEBUG_RCU defined when necessary.
 
 Warning: Enabling this feature result in a performance penalty.
