@@ -11,7 +11,7 @@
 /* Compatibility mode for i386 which lacks cmpxchg instruction. */
 #undef CONFIG_RCU_COMPAT_ARCH
 
-/* Enable internal debugging self-checks. Introduce performance penalty. */
+/* Enable internal debugging self-checks. Introduces a performance penalty. */
 #undef CONFIG_RCU_DEBUG
 
 /* Require the operating system to support the membarrier system call for
