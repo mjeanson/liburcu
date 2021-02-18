@@ -1,3 +1,10 @@
+liburcu (0.12.2-1~ubuntu16.04.1) xenial; urgency=medium
+
+  * [2438e54] New upstream version 0.12.2
+  * [c49448d] Refresh patches
+
+ -- Michael Jeanson <mjeanson@debian.org>  Thu, 18 Feb 2021 14:59:18 -0500
+
 liburcu (0.12.1-1~ubuntu16.04.1) xenial; urgency=medium
 
   * [f19d422] New upstream version 0.12.1
