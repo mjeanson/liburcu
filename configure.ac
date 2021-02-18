@@ -1,5 +1,5 @@
 AC_PREREQ(2.59)
-AC_INIT([userspace-rcu],[0.12.1],[mathieu dot desnoyers at efficios dot com], [], [http://liburcu.org/])
+AC_INIT([userspace-rcu],[0.12.2],[mathieu dot desnoyers at efficios dot com], [], [http://liburcu.org/])
 
 # Following the numbering scheme proposed by libtool for the library version
 # http://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.html
@@ -28,7 +28,7 @@ AH_TEMPLATE([CONFIG_RCU_ARM_HAVE_DMB], [Use the dmb instruction if available for
 AH_TEMPLATE([CONFIG_RCU_TLS], [TLS provided by the compiler.])
 AH_TEMPLATE([CONFIG_RCU_HAVE_CLOCK_GETTIME], [clock_gettime() is detected.])
 AH_TEMPLATE([CONFIG_RCU_FORCE_SYS_MEMBARRIER], [Require the operating system to support the membarrier system call for default and bulletproof flavors.])
-AH_TEMPLATE([CONFIG_RCU_DEBUG], [Enable internal debugging self-checks. Introduce performance penalty.])
+AH_TEMPLATE([CONFIG_RCU_DEBUG], [Enable internal debugging self-checks. Introduces a performance penalty.])
 AH_TEMPLATE([CONFIG_CDS_LFHT_ITER_DEBUG], [Enable extra debugging checks for lock-free hash table iterator traversal. Alters the rculfhash ABI. Make sure to compile both library and application with matching configuration.])
 
 # Allow requiring the operating system to support the membarrier system
@@ -48,8 +48,8 @@ AC_ARG_ENABLE([compiler-tls],
 # Checks for C compiler
 AC_USE_SYSTEM_EXTENSIONS
 AC_PROG_CC
-AC_PROG_CC_STDC
-
+# AC_PROG_CC_STDC was merged in AC_PROG_CC in autoconf 2.70
+m4_version_prereq([2.70], [], [AC_PROG_CC_STDC])
 AS_IF([test "x$def_compiler_tls" = "xyes"], AC_DEFINE([CONFIG_RCU_TLS], [1]), [:])
 
 # Checks for programs.
@@ -257,7 +257,7 @@ AS_IF([test "x$def_smp_support" = "xyes"], [AC_DEFINE([CONFIG_RCU_SMP], [1])])
 # RCU debugging option
 AC_ARG_ENABLE([rcu-debug],
       AS_HELP_STRING([--enable-rcu-debug], [Enable internal debugging
-		      self-checks. Introduce performance penalty.]))
+		      self-checks. Introduces a performance penalty.]))
 AS_IF([test "x$enable_rcu_debug" = "xyes"], [
        AC_DEFINE([CONFIG_RCU_DEBUG], [1])
 ])
