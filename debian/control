@@ -14,7 +14,7 @@ Package: liburcu-dev
 Section: libdevel
 Architecture: any
 Multi-Arch: same
-Depends: ${misc:Depends}, liburcu6 (= ${binary:Version})
+Depends: ${misc:Depends}, liburcu8 (= ${binary:Version})
 Description: userspace RCU (read-copy-update) library - development files
  This data synchronization library provides read-side access which scales
  linearly with the number of cores. It does so by allowing multiples copies of
@@ -25,7 +25,7 @@ Description: userspace RCU (read-copy-update) library - development files
  Install this package if you wish to develop your own programs using the
  userspace RCU library.
 
-Package: liburcu6
+Package: liburcu8
 Architecture: any
 Multi-Arch: same
 Pre-Depends: ${misc:Pre-Depends}
@@ -37,10 +37,10 @@ Description: userspace RCU (read-copy-update) library
  structure accesses to detect grace periods after which memory reclamation is
  possible.
 
-Package: liburcu6-udeb
+Package: liburcu8-udeb
 Package-Type: udeb
 Section: debian-installer
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: userspace RCU (read-copy-update) library -- udeb
- This is a udeb version of liburcu6.
+ This is a udeb version of liburcu8.
