@@ -36,7 +36,6 @@
 
 #include <urcu/arch.h>
 #include <urcu/tls-compat.h>
-#include "cpuset.h"
 #include "thread-id.h"
 
 /* hardcoded number of CPUs */
@@ -83,7 +82,7 @@ pthread_mutex_t affinity_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 static void set_affinity(void)
 {
-#if HAVE_SCHED_SETAFFINITY
+#ifdef HAVE_SCHED_SETAFFINITY
 	cpu_set_t mask;
 	int cpu, ret;
 #endif /* HAVE_SCHED_SETAFFINITY */
@@ -91,7 +90,7 @@ static void set_affinity(void)
 	if (!use_affinity)
 		return;
 
-#if HAVE_SCHED_SETAFFINITY
+#ifdef HAVE_SCHED_SETAFFINITY
 	ret = pthread_mutex_lock(&affinity_mutex);
 	if (ret) {
 		perror("Error in pthread mutex lock");
@@ -106,11 +105,7 @@ static void set_affinity(void)
 
 	CPU_ZERO(&mask);
 	CPU_SET(cpu, &mask);
-#if SCHED_SETAFFINITY_ARGS == 2
-	sched_setaffinity(0, &mask);
-#else
 	sched_setaffinity(0, sizeof(mask), &mask);
-#endif
 #endif /* HAVE_SCHED_SETAFFINITY */
 }
 
@@ -143,6 +138,7 @@ struct test {
 
 static struct cds_lfs_stack_rcu s;
 
+static
 void *thr_enqueuer(void *_count)
 {
 	unsigned long long *count = _count;
@@ -197,6 +193,7 @@ void free_node_cb(struct rcu_head *head)
 	free(node);
 }
 
+static
 void *thr_dequeuer(void *_count)
 {
 	unsigned long long *count = _count;
@@ -245,23 +242,25 @@ void *thr_dequeuer(void *_count)
 	return ((void*)2);
 }
 
-void test_end(struct cds_lfs_stack_rcu *s, unsigned long long *nr_dequeues)
+static
+void test_end(unsigned long long *nr_dequeues_l)
 {
 	struct cds_lfs_node_rcu *snode;
 
 	do {
-		snode = cds_lfs_pop_rcu(s);
+		snode = cds_lfs_pop_rcu(&s);
 		if (snode) {
 			struct test *node;
 
 			node = caa_container_of(snode, struct test, list);
 			free(node);
-			(*nr_dequeues)++;
+			(*nr_dequeues_l)++;
 		}
 	} while (snode);
 }
 
-void show_usage(int argc, char **argv)
+static
+void show_usage(char **argv)
 {
 	printf("Usage : %s nr_dequeuers nr_enqueuers duration (s) <OPTIONS>\n",
 		argv[0]);
@@ -287,25 +286,25 @@ int main(int argc, char **argv)
 	unsigned int i_thr;
 
 	if (argc < 4) {
-		show_usage(argc, argv);
+		show_usage(argv);
 		return -1;
 	}
 
 	err = sscanf(argv[1], "%u", &nr_dequeuers);
 	if (err != 1) {
-		show_usage(argc, argv);
+		show_usage(argv);
 		return -1;
 	}
 
 	err = sscanf(argv[2], "%u", &nr_enqueuers);
 	if (err != 1) {
-		show_usage(argc, argv);
+		show_usage(argv);
 		return -1;
 	}
 
 	err = sscanf(argv[3], "%lu", &duration);
 	if (err != 1) {
-		show_usage(argc, argv);
+		show_usage(argv);
 		return -1;
 	}
 
@@ -315,7 +314,7 @@ int main(int argc, char **argv)
 		switch (argv[i][1]) {
 		case 'a':
 			if (argc < i + 2) {
-				show_usage(argc, argv);
+				show_usage(argv);
 				return -1;
 			}
 			a = atoi(argv[++i]);
@@ -325,14 +324,14 @@ int main(int argc, char **argv)
 			break;
 		case 'c':
 			if (argc < i + 2) {
-				show_usage(argc, argv);
+				show_usage(argv);
 				return -1;
 			}
 			rduration = atol(argv[++i]);
 			break;
 		case 'd':
 			if (argc < i + 2) {
-				show_usage(argc, argv);
+				show_usage(argv);
 				return -1;
 			}
 			wdelay = atol(argv[++i]);
@@ -405,7 +404,7 @@ int main(int argc, char **argv)
 		tot_successful_dequeues += count_dequeuer[2 * i_thr + 1];
 	}
 
-	test_end(&s, &end_dequeues);
+	test_end(&end_dequeues);
 
 	printf_verbose("total number of enqueues : %llu, dequeues %llu\n",
 		       tot_enqueues, tot_dequeues);

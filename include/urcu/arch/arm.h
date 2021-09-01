@@ -30,7 +30,15 @@
 extern "C" {
 #endif
 
-#ifdef CONFIG_RCU_ARM_HAVE_DMB
+/*
+ * Using DMB is faster than the builtin __sync_synchronize and this instruction is
+ * part of the baseline ARMv7 ISA.
+ */
+#ifdef URCU_ARCH_ARMV7
+
+/* For backwards compat. */
+#define CONFIG_RCU_ARM_HAVE_DMB 1
+
 /*
  * Issues full system DMB operation.
  */
@@ -44,7 +52,8 @@ extern "C" {
 #define cmm_smp_mb()	__asm__ __volatile__ ("dmb ish":::"memory")
 #define cmm_smp_rmb()	__asm__ __volatile__ ("dmb ish":::"memory")
 #define cmm_smp_wmb()	__asm__ __volatile__ ("dmb ish":::"memory")
-#endif /* CONFIG_RCU_ARM_HAVE_DMB */
+
+#endif /* URCU_ARCH_ARMV7 */
 
 #include <stdlib.h>
 #include <sys/time.h>
@@ -55,6 +64,28 @@ extern "C" {
  */
 #if (defined(__linux__) && !defined(__NR_membarrier))
 #define __NR_membarrier		389
+#endif
+
+/*
+ * Error out for compilers with known bugs.
+ */
+
+/*
+ * http://gcc.gnu.org/bugzilla/show_bug.cgi?id=58854
+ */
+#ifdef URCU_GCC_VERSION
+# if URCU_GCC_VERSION >= 40800 && URCU_GCC_VERSION <= 40802
+#  error Your gcc version produces clobbered frame accesses
+# endif
+#endif
+
+/*
+ * https://gcc.gnu.org/bugzilla/show_bug.cgi?id=42263
+ */
+#ifdef URCU_GCC_VERSION
+# if URCU_GCC_VERSION >= 40400 && URCU_GCC_VERSION <= 40402
+#  error Your gcc version has a non-functional __sync_synchronize()
+# endif
 #endif
 
 #ifdef __cplusplus

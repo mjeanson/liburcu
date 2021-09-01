@@ -1,10 +1,12 @@
-AM_CFLAGS += -I$(top_srcdir)/include -I$(top_builddir)/include -I$(top_srcdir)/src -I$(top_srcdir)/tests/utils -I$(top_srcdir)/tests/common -g
+AM_CPPFLAGS += -I$(top_srcdir)/src -I$(top_srcdir)/tests/utils -I$(top_srcdir)/tests/common
 
 LOG_DRIVER_FLAGS = --merge --comments
 LOG_DRIVER = env AM_TAP_AWK='$(AWK)' $(SHELL) \
-	$(top_srcdir)/config/tap-driver.sh
+	$(top_srcdir)/tests/utils/tap-driver.sh
 
-noinst_PROGRAMS = test_uatomic \
+noinst_PROGRAMS = \
+	test_arch \
+	test_uatomic \
 	test_urcu_multiflavor \
 	test_urcu_multiflavor_dynlink \
 	test_urcu_multiflavor_single_unit \
@@ -22,6 +24,9 @@ URCU_SIGNAL_LIB=$(top_builddir)/src/liburcu-signal.la
 URCU_BP_LIB=$(top_builddir)/src/liburcu-bp.la
 URCU_CDS_LIB=$(top_builddir)/src/liburcu-cds.la
 TAP_LIB=$(top_builddir)/tests/utils/libtap.a
+
+test_arch_SOURCES = test_arch.c
+test_arch_LDADD = $(URCU_COMMON_LIB) $(TAP_LIB)
 
 test_uatomic_SOURCES = test_uatomic.c
 test_uatomic_LDADD = $(URCU_COMMON_LIB) $(TAP_LIB)

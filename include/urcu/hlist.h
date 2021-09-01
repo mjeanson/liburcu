@@ -17,6 +17,7 @@
  */
 
 #include <stddef.h>
+#include <urcu/compiler.h>
 
 struct cds_hlist_head {
 	struct cds_hlist_node *next;
@@ -40,8 +41,14 @@ void CDS_INIT_HLIST_HEAD(struct cds_hlist_head *ptr)
 	{ .next = NULL }
 
 /* Get typed element from list at a given position. */
-#define cds_hlist_entry(ptr, type, member) \
-	((type *) ((char *) (ptr) - (unsigned long) (&((type *) 0)->member)))
+#define cds_hlist_entry(ptr, type, member)	caa_container_of(ptr, type, member)
+
+/* Get typed element from list at a given position, keeping NULL pointers. */
+#define cds_hlist_entry_safe(ptr, type, member)					\
+	({									\
+		__typeof__(ptr) ____ret = (ptr);				\
+		____ret ? cds_hlist_entry(____ret, type, member) : NULL;	\
+	})
 
 /* Add new element at the head of the list. */
 static inline
@@ -65,12 +72,12 @@ void cds_hlist_del(struct cds_hlist_node *elem)
 }
 
 #define cds_hlist_for_each(pos, head) \
-	for (pos = (head)->next; pos != NULL; pos = pos->next)
+	for (pos = (head)->next; (pos) != NULL; pos = (pos)->next)
 
 #define cds_hlist_for_each_safe(pos, p, head) \
 	for (pos = (head)->next; \
-		(pos != NULL) && (p = pos->next, 1); \
-		pos = p)
+		((pos) != NULL) && (p = (pos)->next, 1); \
+		pos = (p))
 
 /*
  * cds_hlist_for_each_entry and cds_hlist_for_each_entry_safe take
@@ -80,31 +87,27 @@ void cds_hlist_del(struct cds_hlist_node *elem)
  */
 #define cds_hlist_for_each_entry(entry, pos, head, member) \
 	for (pos = (head)->next, \
-			entry = cds_hlist_entry(pos, __typeof__(*entry), member); \
-		pos != NULL; \
-		pos = pos->next, \
-			entry = cds_hlist_entry(pos, __typeof__(*entry), member))
+			entry = cds_hlist_entry(pos, __typeof__(*(entry)), member); \
+		(pos) != NULL; \
+		pos = (pos)->next, \
+			entry = cds_hlist_entry(pos, __typeof__(*(entry)), member))
 
 #define cds_hlist_for_each_entry_safe(entry, pos, p, head, member) \
 	for (pos = (head)->next, \
-			entry = cds_hlist_entry(pos, __typeof__(*entry), member); \
-		(pos != NULL) && (p = pos->next, 1); \
-		pos = p, \
+			entry = cds_hlist_entry(pos, __typeof__(*(entry)), member); \
+		((pos) != NULL) && (p = (pos)->next, 1); \
+		pos = (p), \
 			entry = cds_hlist_entry(pos, __typeof__(*entry), member))
 
 #define cds_hlist_for_each_entry_2(entry, head, member) \
-	for (entry = ((head)->next == NULL ? NULL \
-			: cds_hlist_entry((head)->next, __typeof__(*entry), member)); \
-		entry != NULL; \
-		entry = (entry->member.next == NULL ? NULL \
-			: cds_hlist_entry(entry->member.next, __typeof__(*entry), member)))
+	for (entry = cds_hlist_entry_safe((head)->next, __typeof__(*(entry)), member); \
+		(entry) != NULL; \
+		entry = cds_hlist_entry_safe((entry)->member.next, __typeof__(*(entry)), member))
 
 #define cds_hlist_for_each_entry_safe_2(entry, e, head, member) \
-	for (entry = ((head)->next == NULL ? NULL \
-			: cds_hlist_entry((head)->next, __typeof__(*entry), member)); \
-		(entry != NULL) && (e = (entry->member.next == NULL ? NULL \
-					: cds_hlist_entry(entry->member.next, \
-						__typeof__(*entry), member)), 1); \
+	for (entry = cds_hlist_entry_safe((head)->next, __typeof__(*(entry)), member); \
+		((entry) != NULL) && (e = (cds_hlist_entry_safe((entry)->member.next, \
+						__typeof__(*(entry)), member)), 1); \
 		entry = e)
 
 #endif	/* _KCOMPAT_HLIST_H */

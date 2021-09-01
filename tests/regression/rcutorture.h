@@ -128,6 +128,7 @@ volatile int goflag __attribute__((__aligned__(CAA_CACHE_LINE_SIZE)))
  * Performance test.
  */
 
+static
 void *rcu_read_perf_test(void *arg)
 {
 	int i;
@@ -158,7 +159,8 @@ void *rcu_read_perf_test(void *arg)
 	return (NULL);
 }
 
-void *rcu_update_perf_test(void *arg)
+static
+void *rcu_update_perf_test(void *arg __attribute__((unused)))
 {
 	long long n_updates_local = 0;
 
@@ -189,6 +191,7 @@ void *rcu_update_perf_test(void *arg)
 	return NULL;
 }
 
+static
 void perftestinit(void)
 {
 	init_per_thread(n_reads_pt, 0LL);
@@ -196,6 +199,7 @@ void perftestinit(void)
 	uatomic_set(&nthreadsrunning, 0);
 }
 
+static
 int perftestrun(int nthreads, int nreaders, int nupdaters)
 {
 	int t;
@@ -229,6 +233,7 @@ int perftestrun(int nthreads, int nreaders, int nupdaters)
 	return 0;
 }
 
+static
 int perftest(int nreaders, int cpustride)
 {
 	int i;
@@ -244,6 +249,7 @@ int perftest(int nreaders, int cpustride)
 	return perftestrun(i + 1, nreaders, 1);
 }
 
+static
 int rperftest(int nreaders, int cpustride)
 {
 	int i;
@@ -258,6 +264,7 @@ int rperftest(int nreaders, int cpustride)
 	return perftestrun(i, nreaders, 0);
 }
 
+static
 int uperftest(int nupdaters, int cpustride)
 {
 	int i;
@@ -292,7 +299,8 @@ DEFINE_PER_THREAD(long long [RCU_STRESS_PIPE_LEN + 1], rcu_stress_count);
 
 int garbage = 0;
 
-void *rcu_read_stress_test(void *arg)
+static
+void *rcu_read_stress_test(void *arg __attribute__((unused)))
 {
 	int i;
 	int itercnt = 0;
@@ -335,7 +343,8 @@ void *rcu_read_stress_test(void *arg)
 static pthread_mutex_t call_rcu_test_mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t call_rcu_test_cond = PTHREAD_COND_INITIALIZER;
 
-void rcu_update_stress_test_rcu(struct rcu_head *head)
+static
+void rcu_update_stress_test_rcu(struct rcu_head *head __attribute__((unused)))
 {
 	int ret;
 
@@ -362,7 +371,8 @@ void rcu_update_stress_test_rcu(struct rcu_head *head)
 	}
 }
 
-void *rcu_update_stress_test(void *arg)
+static
+void *rcu_update_stress_test(void *arg __attribute__((unused)))
 {
 	int i;
 	struct rcu_stress *p;
@@ -435,7 +445,8 @@ void *rcu_update_stress_test(void *arg)
 	return NULL;
 }
 
-void *rcu_fake_update_stress_test(void *arg)
+static
+void *rcu_fake_update_stress_test(void *arg __attribute__((unused)))
 {
 	if (callrcu_type == CALLRCU_PERTHREAD) {
 		struct call_rcu_data *crdp;
@@ -462,6 +473,7 @@ void *rcu_fake_update_stress_test(void *arg)
 	return NULL;
 }
 
+static
 int stresstest(int nreaders)
 {
 	int i;
@@ -519,7 +531,11 @@ int stresstest(int nreaders)
  * Mainprogram.
  */
 
-void usage(int argc, char *argv[])
+static
+void usage(char *argv[]) __attribute__((noreturn));
+
+static
+void usage(char *argv[])
 {
 	diag("Usage: %s nreaders [ perf | rperf | uperf | stress ] [ stride ] [ callrcu_global | callrcu_percpu | callrcu_perthread ]\n", argv[0]);
 	exit(-1);
@@ -544,7 +560,7 @@ int main(int argc, char *argv[])
 		} else if (strcmp(callrcu_str, "callrcu_perthread") == 0) {
 			callrcu_type = CALLRCU_PERTHREAD;
 		} else {
-			usage(argc, argv);
+			usage(argv);
 			goto end;
 		}
 	}
@@ -574,7 +590,7 @@ int main(int argc, char *argv[])
 	if (argc > 1) {
 		if (strcmp(argv[1], "-h") == 0
 				|| strcmp(argv[1], "--help") == 0) {
-			usage(argc, argv);
+			usage(argv);
 			goto end;
 		}
 		nreaders = strtoul(argv[1], NULL, 0);
@@ -603,9 +619,9 @@ int main(int argc, char *argv[])
 				"stresstest readers: %d, stride: %d",
 				nreaders, cpustride);
 		else
-			usage(argc, argv);
+			usage(argv);
 	} else {
-		usage(argc, argv);
+		usage(argv);
 	}
 end:
 	return exit_status();
