@@ -33,7 +33,6 @@
 
 #include <urcu/arch.h>
 #include <urcu/tls-compat.h>
-#include "cpuset.h"
 #include "thread-id.h"
 #include "../common/debug-yield.h"
 
@@ -85,7 +84,7 @@ pthread_mutex_t affinity_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 static void set_affinity(void)
 {
-#if HAVE_SCHED_SETAFFINITY
+#ifdef HAVE_SCHED_SETAFFINITY
 	cpu_set_t mask;
 	int cpu, ret;
 #endif /* HAVE_SCHED_SETAFFINITY */
@@ -93,7 +92,7 @@ static void set_affinity(void)
 	if (!use_affinity)
 		return;
 
-#if HAVE_SCHED_SETAFFINITY
+#ifdef HAVE_SCHED_SETAFFINITY
 	ret = pthread_mutex_lock(&affinity_mutex);
 	if (ret) {
 		perror("Error in pthread mutex lock");
@@ -108,11 +107,7 @@ static void set_affinity(void)
 
 	CPU_ZERO(&mask);
 	CPU_SET(cpu, &mask);
-#if SCHED_SETAFFINITY_ARGS == 2
-	sched_setaffinity(0, &mask);
-#else
 	sched_setaffinity(0, sizeof(mask), &mask);
-#endif
 #endif /* HAVE_SCHED_SETAFFINITY */
 }
 
@@ -137,6 +132,7 @@ static unsigned int nr_writers;
 
 pthread_mutex_t rcu_copy_mutex = PTHREAD_MUTEX_INITIALIZER;
 
+static
 void rcu_copy_mutex_lock(void)
 {
 	int ret;
@@ -147,6 +143,7 @@ void rcu_copy_mutex_lock(void)
 	}
 }
 
+static
 void rcu_copy_mutex_unlock(void)
 {
 	int ret;
@@ -191,6 +188,7 @@ static void test_array_free(struct test_array *ptr)
 	ptr->a = ARRAY_POISON;
 }
 
+static
 void *thr_reader(void *_count)
 {
 	unsigned long long *count = _count;
@@ -231,6 +229,7 @@ void *thr_reader(void *_count)
 
 }
 
+static
 void *thr_writer(void *_count)
 {
 	unsigned long long *count = _count;
@@ -272,7 +271,8 @@ void *thr_writer(void *_count)
 	return ((void*)2);
 }
 
-void show_usage(int argc, char **argv)
+static
+void show_usage(char **argv)
 {
 	printf("Usage : %s nr_readers nr_writers duration (s) <OPTIONS>\n",
 		argv[0]);
@@ -297,25 +297,25 @@ int main(int argc, char **argv)
 	unsigned int i_thr;
 
 	if (argc < 4) {
-		show_usage(argc, argv);
+		show_usage(argv);
 		return -1;
 	}
 
 	err = sscanf(argv[1], "%u", &nr_readers);
 	if (err != 1) {
-		show_usage(argc, argv);
+		show_usage(argv);
 		return -1;
 	}
 
 	err = sscanf(argv[2], "%u", &nr_writers);
 	if (err != 1) {
-		show_usage(argc, argv);
+		show_usage(argv);
 		return -1;
 	}
 
 	err = sscanf(argv[3], "%lu", &duration);
 	if (err != 1) {
-		show_usage(argc, argv);
+		show_usage(argv);
 		return -1;
 	}
 
@@ -331,7 +331,7 @@ int main(int argc, char **argv)
 			break;
 		case 'a':
 			if (argc < i + 2) {
-				show_usage(argc, argv);
+				show_usage(argv);
 				return -1;
 			}
 			a = atoi(argv[++i]);
@@ -341,21 +341,21 @@ int main(int argc, char **argv)
 			break;
 		case 'c':
 			if (argc < i + 2) {
-				show_usage(argc, argv);
+				show_usage(argv);
 				return -1;
 			}
 			rduration = atol(argv[++i]);
 			break;
 		case 'd':
 			if (argc < i + 2) {
-				show_usage(argc, argv);
+				show_usage(argv);
 				return -1;
 			}
 			wdelay = atol(argv[++i]);
 			break;
 		case 'e':
 			if (argc < i + 2) {
-				show_usage(argc, argv);
+				show_usage(argv);
 				return -1;
 			}
 			wduration = atol(argv[++i]);

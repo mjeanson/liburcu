@@ -26,7 +26,6 @@
 
 #include <urcu/compiler.h>
 #include <urcu/arch.h>
-#include "cpuset.h"
 
 /*
  * Machine parameters.
@@ -229,25 +228,26 @@ static void wait_all_threads(void)
 	}
 }
 
+#ifdef HAVE_SCHED_SETAFFINITY
 static void run_on(int cpu)
 {
-#if HAVE_SCHED_SETAFFINITY
 	cpu_set_t mask;
 
 	CPU_ZERO(&mask);
 	CPU_SET(cpu, &mask);
-#if SCHED_SETAFFINITY_ARGS == 2
-	sched_setaffinity(0, &mask);
-#else
 	sched_setaffinity(0, sizeof(mask), &mask);
-#endif
-#endif /* HAVE_SCHED_SETAFFINITY */
 }
+#else
+
+static void run_on(int cpu __attribute__((unused)))
+{}
+#endif /* HAVE_SCHED_SETAFFINITY */
 
 /*
  * timekeeping -- very crude -- should use MONOTONIC...
  */
 
+static inline
 long long get_microseconds(void)
 {
 	struct timeval tv;

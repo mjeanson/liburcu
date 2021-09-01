@@ -1,12 +1,9 @@
-#ifndef _URCU_TESTS_CPUSET_H
-#define _URCU_TESTS_CPUSET_H
-
 /*
- * cpuset.h
+ * test_arch.c
  *
- * Userspace RCU library - test cpuset header
+ * Userspace RCU library - test arch headers
  *
- * Copyright 2009-2013 - Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+ * Copyright February 2021 Michael Jeanson <mjeanson@efficios.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,21 +20,33 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#if defined(HAVE_SCHED_SETAFFINITY) || defined(HAVE_CPU_SET_T)	\
-		|| defined(HAVE_CPU_ZERO) || defined(HAVE_CPU_SET)
-# include <sched.h>
-#endif
+#include <stdio.h>
+#include <urcu/arch.h>
 
-#ifndef HAVE_CPU_SET_T
-typedef unsigned long cpu_set_t;
-#endif
+#include "tap.h"
 
-#ifndef HAVE_CPU_ZERO
-# define CPU_ZERO(cpuset) do { *(cpuset) = 0; } while(0)
-#endif
+#define NR_TESTS 1
 
-#ifndef HAVE_CPU_SET
-# define CPU_SET(cpu, cpuset) do { *(cpuset) |= (1UL << (cpu)); } while(0)
-#endif
 
-#endif /* _URCU_TESTS_CPUSET_H */
+/*
+ * This is only to make sure the static inline caa_get_cycles() in the public
+ * headers builds properly.
+ */
+static
+void test_caa_get_cycles(void) {
+	caa_cycles_t cycles = 0;
+
+
+	cycles = caa_get_cycles();
+
+	ok(cycles != 0, "caa_get_cycles works");
+}
+
+int main(void)
+{
+	plan_tests(NR_TESTS);
+
+	test_caa_get_cycles();
+
+	return exit_status();
+}

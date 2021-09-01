@@ -56,26 +56,31 @@ struct test_hash_cb test_hash_cb[] = {
 
 static enum test_hash test_choice = TEST_HASH_RW;
 
+static
 void (*get_sigusr1_cb(void))(int)
 {
 	return test_hash_cb[test_choice].sigusr1;
 }
 
+static
 void (*get_sigusr2_cb(void))(int)
 {
 	return test_hash_cb[test_choice].sigusr2;
 }
 
+static
 void *(*get_thr_reader_cb(void))(void *)
 {
 	return test_hash_cb[test_choice].thr_reader;
 }
 
+static
 void *(*get_thr_writer_cb(void))(void *)
 {
 	return test_hash_cb[test_choice].thr_writer;
 }
 
+static
 int (*get_populate_hash_cb(void))(void)
 {
 	return test_hash_cb[test_choice].populate_hash;
@@ -135,7 +140,7 @@ static pthread_mutex_t rcu_copy_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 void set_affinity(void)
 {
-#if HAVE_SCHED_SETAFFINITY
+#ifdef HAVE_SCHED_SETAFFINITY
 	cpu_set_t mask;
 	int cpu, ret;
 #endif /* HAVE_SCHED_SETAFFINITY */
@@ -143,7 +148,7 @@ void set_affinity(void)
 	if (!use_affinity)
 		return;
 
-#if HAVE_SCHED_SETAFFINITY
+#ifdef HAVE_SCHED_SETAFFINITY
 	ret = pthread_mutex_lock(&affinity_mutex);
 	if (ret) {
 		perror("Error in pthread mutex lock");
@@ -157,11 +162,7 @@ void set_affinity(void)
 	}
 	CPU_ZERO(&mask);
 	CPU_SET(cpu, &mask);
-#if SCHED_SETAFFINITY_ARGS == 2
-	sched_setaffinity(0, &mask);
-#else
 	sched_setaffinity(0, sizeof(mask), &mask);
-#endif
 #endif /* HAVE_SCHED_SETAFFINITY */
 }
 
@@ -198,7 +199,8 @@ unsigned long test_compare(const void *key1, size_t key1_len,
 		return 1;
 }
 
-void *thr_count(void *arg)
+static
+void *thr_count(void *arg __attribute__((unused)))
 {
 	printf_verbose("thread_begin %s, tid %lu\n",
 			"counter", urcu_get_thread_id());
@@ -263,7 +265,8 @@ void test_delete_all_nodes(struct cds_lfht *ht)
 	printf("deleted %lu nodes.\n", count);
 }
 
-void show_usage(int argc, char **argv)
+static
+void show_usage(char **argv)
 {
 	printf("Usage : %s nr_readers nr_writers duration (s) <OPTIONS>\n",
 		argv[0]);
@@ -316,28 +319,28 @@ int main(int argc, char **argv)
 	long long nr_leaked;
 
 	if (argc < 4) {
-		show_usage(argc, argv);
+		show_usage(argv);
 		mainret = 1;
 		goto end;
 	}
 
 	err = sscanf(argv[1], "%u", &nr_readers);
 	if (err != 1) {
-		show_usage(argc, argv);
+		show_usage(argv);
 		mainret = 1;
 		goto end;
 	}
 
 	err = sscanf(argv[2], "%u", &nr_writers);
 	if (err != 1) {
-		show_usage(argc, argv);
+		show_usage(argv);
 		mainret = 1;
 		goto end;
 	}
 
 	err = sscanf(argv[3], "%lu", &duration);
 	if (err != 1) {
-		show_usage(argc, argv);
+		show_usage(argv);
 		mainret = 1;
 		goto end;
 	}
@@ -354,7 +357,7 @@ int main(int argc, char **argv)
 			break;
 		case 'a':
 			if (argc < i + 2) {
-				show_usage(argc, argv);
+				show_usage(argv);
 				mainret = 1;
 				goto end;
 			}
@@ -365,7 +368,7 @@ int main(int argc, char **argv)
 			break;
 		case 'c':
 			if (argc < i + 2) {
-				show_usage(argc, argv);
+				show_usage(argv);
 				mainret = 1;
 				goto end;
 			}
@@ -373,7 +376,7 @@ int main(int argc, char **argv)
 			break;
 		case 'd':
 			if (argc < i + 2) {
-				show_usage(argc, argv);
+				show_usage(argv);
 				mainret = 1;
 				goto end;
 			}
@@ -384,7 +387,7 @@ int main(int argc, char **argv)
 			break;
 		case 'h':
 			if (argc < i + 2) {
-				show_usage(argc, argv);
+				show_usage(argv);
 				mainret = 1;
 				goto end;
 			}
@@ -392,7 +395,7 @@ int main(int argc, char **argv)
 			break;
 		case 'm':
 			if (argc < i + 2) {
-				show_usage(argc, argv);
+				show_usage(argv);
 				mainret = 1;
 				goto end;
 			}
@@ -400,7 +403,7 @@ int main(int argc, char **argv)
 			break;
 		case 'n':
 			if (argc < i + 2) {
-				show_usage(argc, argv);
+				show_usage(argv);
 				mainret = 1;
 				goto end;
 			}
@@ -431,7 +434,7 @@ int main(int argc, char **argv)
 			break;
 		case 'B':
 			if (argc < i + 2) {
-				show_usage(argc, argv);
+				show_usage(argv);
 				mainret = 1;
 				goto end;
 			}
@@ -688,11 +691,11 @@ end_pthread_join:
 	}
 	{
 		char msg[1] = { 0x42 };
-		ssize_t ret;
+		ssize_t sret;
 
 		do {
-			ret = write(count_pipe[1], msg, 1);	/* wakeup thread */
-		} while (ret == -1L && errno == EINTR);
+			sret = write(count_pipe[1], msg, 1);	/* wakeup thread */
+		} while (sret == -1L && errno == EINTR);
 	}
 	err = pthread_join(tid_count, &tret);
 	if (err != 0) {

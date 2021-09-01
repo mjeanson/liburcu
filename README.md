@@ -58,7 +58,7 @@ Tested on:
   - FreeBSD 8.2/8.3/9.0/9.1/10.0 i386/amd64
   - Solaris 10/11 i386
   - Cygwin i386/amd64
-  - MacOSX amd64
+  - MacOS amd64/arm64
 
 Should also work on:
 
@@ -91,16 +91,8 @@ supported, with the following exceptions:
 
 Clang version 3.0 (based on LLVM 3.0) is supported.
 
-Building on MacOS X (Darwin) requires a work-around for processor
-detection:
-
-  - 32-bit:
-
-        ./configure --build=i686-apple-darwin11
-
-  - 64-bit:
-
-        ./configure --build=x86_64-apple-darwin11
+Glibc >= 2.4 should work but the older version we test against is
+currently 2.17.
 
 For developers using the Git tree:
 
@@ -108,7 +100,7 @@ This source tree is based on the autotools suite from GNU to simplify
 portability. Here are some things you should have on your system in order to
 compile the git repository tree :
 
-  - GNU autotools (automake >=1.10, autoconf >=2.50, autoheader >=2.50)
+  - GNU autotools (automake >=1.12, autoconf >=2.69)
     (make sure your system wide `automake` points to a recent version!)
   - GNU Libtool >=2.2
     (for more information, go to http://www.gnu.org/software/autoconf/)
@@ -439,6 +431,33 @@ In addition to the usual `make check` target, Userspace RCU features
     modifying Userspace RCU or porting it to a new architecture or
     operating system.
   - `make bench`: long (many hours) benchmarks.
+
+
+Known issues
+------------
+
+There is an application vs library compatibility issue between
+applications built using Userspace RCU 0.10 headers linked against
+Userspace RCU 0.11 or 0.12 shared objects. The problem occurs as
+follows:
+
+  - An application executable is built with _LGPL_SOURCE defined, includes
+    any of the Userspace RCU 0.10 urcu flavor headers, and is built
+    without the -fpic compiler option.
+
+  - The Userspace RCU 0.10 library shared objects are updated to 0.11
+    or 0.12 without rebuilding the application.
+
+  - The application will hang, typically when RCU grace period
+    (synchronize_rcu) is invoked.
+
+Some possible work-arounds for this are:
+
+  - Rebuild the application against Userspace RCU 0.11+.
+
+  - Rebuild the application with -fpic.
+
+  - Upgrade Userspace RCU to 0.13+ without installing 0.11 nor 0.12.
 
 
 Contacts

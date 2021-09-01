@@ -37,7 +37,6 @@
 #include <urcu/arch.h>
 #include <urcu/tls-compat.h>
 #include <urcu/uatomic.h>
-#include "cpuset.h"
 #include "thread-id.h"
 
 /* hardcoded number of CPUs */
@@ -91,7 +90,7 @@ pthread_mutex_t affinity_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 static void set_affinity(void)
 {
-#if HAVE_SCHED_SETAFFINITY
+#ifdef HAVE_SCHED_SETAFFINITY
 	cpu_set_t mask;
 	int cpu, ret;
 #endif /* HAVE_SCHED_SETAFFINITY */
@@ -99,7 +98,7 @@ static void set_affinity(void)
 	if (!use_affinity)
 		return;
 
-#if HAVE_SCHED_SETAFFINITY
+#ifdef HAVE_SCHED_SETAFFINITY
 	ret = pthread_mutex_lock(&affinity_mutex);
 	if (ret) {
 		perror("Error in pthread mutex lock");
@@ -114,11 +113,7 @@ static void set_affinity(void)
 
 	CPU_ZERO(&mask);
 	CPU_SET(cpu, &mask);
-#if SCHED_SETAFFINITY_ARGS == 2
-	sched_setaffinity(0, &mask);
-#else
 	sched_setaffinity(0, sizeof(mask), &mask);
-#endif
 #endif /* HAVE_SCHED_SETAFFINITY */
 }
 
@@ -308,8 +303,8 @@ static void *thr_dequeuer(void *_count)
 	return ((void*)2);
 }
 
-static void test_end(unsigned long long *nr_dequeues,
-		unsigned long long *nr_dequeue_last)
+static void test_end(unsigned long long *nr_dequeues_l,
+		unsigned long long *nr_dequeue_last_l)
 {
 	struct cds_wfcq_node *node;
 	int state;
@@ -319,14 +314,14 @@ static void test_end(unsigned long long *nr_dequeues,
 				&state);
 		if (node) {
 			if (state & CDS_WFCQ_STATE_LAST)
-				(*nr_dequeue_last)++;
+				(*nr_dequeue_last_l)++;
 			free(node);
-			(*nr_dequeues)++;
+			(*nr_dequeues_l)++;
 		}
 	} while (node);
 }
 
-static void show_usage(int argc, char **argv)
+static void show_usage(char **argv)
 {
 	printf("Usage : %s nr_dequeuers nr_enqueuers duration (s) <OPTIONS>\n",
 		argv[0]);
@@ -360,25 +355,25 @@ int main(int argc, char **argv)
 	unsigned int i_thr;
 
 	if (argc < 4) {
-		show_usage(argc, argv);
+		show_usage(argv);
 		return -1;
 	}
 
 	err = sscanf(argv[1], "%u", &nr_dequeuers);
 	if (err != 1) {
-		show_usage(argc, argv);
+		show_usage(argv);
 		return -1;
 	}
 
 	err = sscanf(argv[2], "%u", &nr_enqueuers);
 	if (err != 1) {
-		show_usage(argc, argv);
+		show_usage(argv);
 		return -1;
 	}
 
 	err = sscanf(argv[3], "%lu", &duration);
 	if (err != 1) {
-		show_usage(argc, argv);
+		show_usage(argv);
 		return -1;
 	}
 
@@ -388,7 +383,7 @@ int main(int argc, char **argv)
 		switch (argv[i][1]) {
 		case 'a':
 			if (argc < i + 2) {
-				show_usage(argc, argv);
+				show_usage(argv);
 				return -1;
 			}
 			a = atoi(argv[++i]);
@@ -398,14 +393,14 @@ int main(int argc, char **argv)
 			break;
 		case 'c':
 			if (argc < i + 2) {
-				show_usage(argc, argv);
+				show_usage(argv);
 				return -1;
 			}
 			rduration = atol(argv[++i]);
 			break;
 		case 'd':
 			if (argc < i + 2) {
-				show_usage(argc, argv);
+				show_usage(argv);
 				return -1;
 			}
 			wdelay = atol(argv[++i]);

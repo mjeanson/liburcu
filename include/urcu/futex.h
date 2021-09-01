@@ -24,6 +24,8 @@
  */
 
 #include <urcu/config.h>
+#include <urcu/syscall-compat.h>
+
 #include <errno.h>
 #include <stdint.h>
 #include <time.h>
@@ -54,7 +56,10 @@ extern int compat_futex_noasync(int32_t *uaddr, int op, int32_t val,
 extern int compat_futex_async(int32_t *uaddr, int op, int32_t val,
 		const struct timespec *timeout, int32_t *uaddr2, int32_t val3);
 
-#ifdef CONFIG_RCU_HAVE_FUTEX
+#if (defined(__linux__) && defined(__NR_futex))
+
+/* For backwards compat */
+#define CONFIG_RCU_HAVE_FUTEX 1
 
 #include <unistd.h>
 #include <errno.h>
@@ -110,7 +115,9 @@ static inline int futex_async(int32_t *uaddr, int op, int32_t val,
 #include <sys/umtx.h>
 
 static inline int futex_async(int32_t *uaddr, int op, int32_t val,
-		const struct timespec *timeout, int32_t *uaddr2, int32_t val3)
+		const struct timespec *timeout,
+		int32_t *uaddr2 __attribute__((unused)),
+		int32_t val3 __attribute__((unused)))
 {
 	int umtx_op;
 	void *umtx_uaddr = NULL, *umtx_uaddr2 = NULL;
