@@ -1,3 +1,13 @@
+liburcu (0.13.0-1) unstable; urgency=medium
+
+  * [595738c] New upstream version 0.13.0
+  * [06432b2] Refresh patches for 0.13.0
+  * [f4d1389] soname bump from 6 to 8
+  * [7048d5c] Update debian/copyright
+  * [dd4d87e] Bump watch file version to 4
+
+ -- Michael Jeanson <mjeanson@debian.org>  Wed, 01 Sep 2021 16:52:30 -0400
+
 liburcu (0.12.2-1) unstable; urgency=medium
 
   * [2438e54] New upstream version 0.12.2
