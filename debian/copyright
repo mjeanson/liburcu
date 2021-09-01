@@ -28,9 +28,18 @@ Files: doc/examples/rculfhash/jhash.h
 Copyright: 2009-2012, - Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 License: MIT-MINIMAL
 
+Files: doc/examples/urcu-flavors/*
+Copyright: 2013, Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+License: LGPL-2.1+
+
 Files: include/urcu/*
 Copyright: 2009, 2010, Paul E. McKenney, IBM Corporation.
   2009-2015, 2017, Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+License: LGPL-2.1+
+
+Files: include/urcu/arch.h
+  include/urcu/uatomic.h
+Copyright: 2020, Michael Jeanson <michael.jeanson@efficios.com>
 License: LGPL-2.1+
 
 Files: include/urcu/arch/alpha.h
@@ -236,7 +245,7 @@ Files: src/compat-rand.h
 Copyright: 2013, - Pierre-Luc St-Charles <pierre-luc.st-charles@polymtl.ca> / 1996, - Ulrich Drepper <drepper@cygnus.com >
 License: LGPL-2.1+
 
-Files: src/compat_arch_x86.c
+Files: src/compat_arch.c
   src/compat_futex.c
 Copyright: 2009, Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
 License: LGPL-2.1+
@@ -346,10 +355,6 @@ Files: tests/common/api.h
 Copyright: 2006, Paul E. McKenney, IBM.
 License: GPL-2+
 
-Files: tests/common/cpuset.h
-Copyright: 2009-2013, - Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
-License: GPL-2+
-
 Files: tests/common/thread-id.h
 Copyright: 2013, - Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 License: MIT-MINIMAL
@@ -366,6 +371,10 @@ Files: tests/unit/*
 Copyright: February 2012, - Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
 License: GPL-2+
 
+Files: tests/unit/test_arch.c
+Copyright: February 2021, Michael Jeanson <mjeanson@efficios.com>
+License: GPL-2+
+
 Files: tests/unit/test_uatomic.c
 Copyright: February 2009, - Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
 License: GPL-2+
@@ -375,7 +384,8 @@ Copyright: February 2012, - Mathieu Desnoyers <mathieu.desnoyers@efficios.com> /
 License: GPL-2+
 
 Files: tests/utils/*
-Copyright: 2004, Nik Clayton
+Copyright: 2017, Jérémie Galarneau
+  2004, Nik Clayton
 License: BSD-2-clause
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions
@@ -397,6 +407,10 @@ License: BSD-2-clause
  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  SUCH DAMAGE.
+
+Files: tests/utils/tap-driver.sh
+Copyright: 2011-2018, Free Software Foundation, Inc.
+License: GPL-2+
 
 Files: tests/utils/tap.sh
 Copyright: 2010, Patrick LeBoutillier <patrick.leboutillier@gmail.com>
