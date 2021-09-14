@@ -1,3 +1,11 @@
+liburcu (0.13.0-2) unstable; urgency=medium
+
+  * [93a4c5b] Fix symbols file for m68k and riscv64
+  * [6f0527d] Add missing bits to SuperH support patch
+  * [b676298] Ship examples in liburcu-dev
+
+ -- Michael Jeanson <mjeanson@debian.org>  Tue, 14 Sep 2021 17:11:38 -0400
+
 liburcu (0.13.0-1) unstable; urgency=medium
 
   * [595738c] New upstream version 0.13.0
