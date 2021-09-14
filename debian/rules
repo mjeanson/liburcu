@@ -34,4 +34,5 @@ override_dh_auto_test:
 	dh_auto_test -- regtest
 
 override_dh_installdocs:
+	cd doc && make clean
 	dh_installdocs -Xexamples/Makefile
