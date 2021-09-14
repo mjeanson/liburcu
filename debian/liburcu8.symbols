@@ -431,7 +431,7 @@ liburcu-bp.so.8 liburcu8 #MINVER#
  urcu_bp_read_lock@Base 0.13.0
  urcu_bp_read_ongoing@Base 0.13.0
  urcu_bp_read_unlock@Base 0.13.0
- urcu_bp_reader@Base 0.13.0
+ (arch=!m68k,!riscv64)urcu_bp_reader@Base 0.13.0
  urcu_bp_register@Base 0.13.0
  urcu_bp_register_rculfhash_atfork@Base 0.13.0
  urcu_bp_register_thread@Base 0.13.0
@@ -586,7 +586,7 @@ liburcu-mb.so.8 liburcu8 #MINVER#
  urcu_mb_read_lock@Base 0.13.0
  urcu_mb_read_ongoing@Base 0.13.0
  urcu_mb_read_unlock@Base 0.13.0
- urcu_mb_reader@Base 0.13.0
+ (arch=!m68k,!riscv64)urcu_mb_reader@Base 0.13.0
  urcu_mb_register_rculfhash_atfork@Base 0.13.0
  urcu_mb_register_thread@Base 0.13.0
  urcu_mb_set_cpu_call_rcu_data@Base 0.13.0
@@ -631,7 +631,7 @@ liburcu-memb.so.8 liburcu8 #MINVER#
  urcu_memb_read_lock@Base 0.13.0
  urcu_memb_read_ongoing@Base 0.13.0
  urcu_memb_read_unlock@Base 0.13.0
- urcu_memb_reader@Base 0.13.0
+ (arch=!m68k,!riscv64)urcu_memb_reader@Base 0.13.0
  urcu_memb_register_rculfhash_atfork@Base 0.13.0
  urcu_memb_register_thread@Base 0.13.0
  urcu_memb_set_cpu_call_rcu_data@Base 0.13.0
@@ -676,7 +676,7 @@ liburcu-qsbr.so.8 liburcu8 #MINVER#
  urcu_qsbr_read_lock@Base 0.13.0
  urcu_qsbr_read_ongoing@Base 0.13.0
  urcu_qsbr_read_unlock@Base 0.13.0
- urcu_qsbr_reader@Base 0.13.0
+ (arch=!m68k,!riscv64)urcu_qsbr_reader@Base 0.13.0
  urcu_qsbr_register_rculfhash_atfork@Base 0.13.0
  urcu_qsbr_register_thread@Base 0.13.0
  urcu_qsbr_set_cpu_call_rcu_data@Base 0.13.0
@@ -723,7 +723,7 @@ liburcu-signal.so.8 liburcu8 #MINVER#
  urcu_signal_read_lock@Base 0.13.0
  urcu_signal_read_ongoing@Base 0.13.0
  urcu_signal_read_unlock@Base 0.13.0
- urcu_signal_reader@Base 0.13.0
+ (arch=!m68k,!riscv64)urcu_signal_reader@Base 0.13.0
  urcu_signal_register_rculfhash_atfork@Base 0.13.0
  urcu_signal_register_thread@Base 0.13.0
  urcu_signal_set_cpu_call_rcu_data@Base 0.13.0
@@ -768,7 +768,7 @@ liburcu.so.8 liburcu8 #MINVER#
  urcu_memb_read_lock@Base 0.13.0
  urcu_memb_read_ongoing@Base 0.13.0
  urcu_memb_read_unlock@Base 0.13.0
- urcu_memb_reader@Base 0.13.0
+ (arch=!m68k,!riscv64)urcu_memb_reader@Base 0.13.0
  urcu_memb_register_rculfhash_atfork@Base 0.13.0
  urcu_memb_register_thread@Base 0.13.0
  urcu_memb_set_cpu_call_rcu_data@Base 0.13.0
