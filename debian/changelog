@@ -1,3 +1,9 @@
+liburcu (0.13.0-2~ubuntu18.04.1) bionic; urgency=medium
+
+  * Source backport to bionic.
+
+ -- Michael Jeanson <mjeanson@debian.org>  Mon, 18 Oct 2021 17:02:21 -0400
+
 liburcu (0.13.0-2) unstable; urgency=medium
 
   * [93a4c5b] Fix symbols file for m68k and riscv64
