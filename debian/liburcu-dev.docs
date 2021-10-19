@@ -1,6 +1,5 @@
-README.md
-lgpl-relicensing.txt
-doc/cds-api.md
-doc/rcu-api.md
-doc/uatomic-api.md
-doc/examples
+usr/share/doc/userspace-rcu/README.md
+usr/share/doc/userspace-rcu/cds-api.md
+usr/share/doc/userspace-rcu/rcu-api.md
+usr/share/doc/userspace-rcu/uatomic-api.md
+usr/share/doc/userspace-rcu/examples

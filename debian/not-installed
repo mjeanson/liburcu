@@ -1,0 +1,3 @@
+usr/lib/*/*.la
+usr/share/doc/userspace-rcu/solaris-build.md
+usr/share/doc/userspace-rcu/LICENSE
