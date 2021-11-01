@@ -1,3 +1,11 @@
+liburcu (0.13.0-3) unstable; urgency=medium
+
+  * [3d4a120] Update salsa-ci config
+  * [f853944] Update to debhelper compat 12
+  * [63c0660] Fix SuperH support patch to install headers
+
+ -- Michael Jeanson <mjeanson@debian.org>  Mon, 01 Nov 2021 14:31:57 -0400
+
 liburcu (0.13.0-2) unstable; urgency=medium
 
   * [93a4c5b] Fix symbols file for m68k and riscv64
