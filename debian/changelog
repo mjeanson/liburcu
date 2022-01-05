@@ -1,3 +1,9 @@
+liburcu (0.13.1-1~ubuntu20.04.1) focal; urgency=medium
+
+  * [3f7883c] New upstream version 0.13.1
+
+ -- Michael Jeanson <mjeanson@debian.org>  Wed, 05 Jan 2022 16:20:29 -0500
+
 liburcu (0.13.0-2~ubuntu20.04.1) focal; urgency=medium
 
   * Source backport to focal.
