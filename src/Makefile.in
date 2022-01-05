@@ -112,7 +112,8 @@ mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/include/config.h \
 	$(top_builddir)/include/urcu/config.h
 CONFIG_CLEAN_FILES = liburcu.pc liburcu-bp.pc liburcu-cds.pc \
-	liburcu-qsbr.pc liburcu-mb.pc liburcu-signal.pc
+	liburcu-qsbr.pc liburcu-mb.pc liburcu-memb.pc \
+	liburcu-signal.pc
 CONFIG_CLEAN_VPATH_FILES =
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
 am__vpath_adj = case $$p in \
@@ -307,8 +308,9 @@ ETAGS = etags
 CTAGS = ctags
 am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/liburcu-bp.pc.in \
 	$(srcdir)/liburcu-cds.pc.in $(srcdir)/liburcu-mb.pc.in \
-	$(srcdir)/liburcu-qsbr.pc.in $(srcdir)/liburcu-signal.pc.in \
-	$(srcdir)/liburcu.pc.in $(top_srcdir)/config/depcomp
+	$(srcdir)/liburcu-memb.pc.in $(srcdir)/liburcu-qsbr.pc.in \
+	$(srcdir)/liburcu-signal.pc.in $(srcdir)/liburcu.pc.in \
+	$(top_srcdir)/config/depcomp
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
@@ -488,7 +490,7 @@ liburcu_cds_la_SOURCES = rculfqueue.c rculfstack.c lfstack.c \
 liburcu_cds_la_LIBADD = liburcu-common.la
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = liburcu-cds.pc liburcu.pc liburcu-bp.pc liburcu-qsbr.pc \
-	liburcu-signal.pc liburcu-mb.pc
+	liburcu-signal.pc liburcu-mb.pc liburcu-memb.pc
 
 EXTRA_DIST = \
 	urcu-call-rcu-impl.h \
@@ -537,6 +539,8 @@ liburcu-cds.pc: $(top_builddir)/config.status $(srcdir)/liburcu-cds.pc.in
 liburcu-qsbr.pc: $(top_builddir)/config.status $(srcdir)/liburcu-qsbr.pc.in
 	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
 liburcu-mb.pc: $(top_builddir)/config.status $(srcdir)/liburcu-mb.pc.in
+	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
+liburcu-memb.pc: $(top_builddir)/config.status $(srcdir)/liburcu-memb.pc.in
 	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
 liburcu-signal.pc: $(top_builddir)/config.status $(srcdir)/liburcu-signal.pc.in
 	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
