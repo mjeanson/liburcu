@@ -16,7 +16,7 @@ License: FSFUL
  Please fill license FSFUL from header of configure
 
 Files: debian/*
-Copyright: 2014-2017, Michael Jeanson <mjeanson@ubuntu.com>
+Copyright: 2014-2022, Michael Jeanson <mjeanson@debian.org>
   2009-2015, Jon Bernard <jbernard@debian.org>
 License: GPL-3+
 
