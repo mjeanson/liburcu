@@ -1,3 +1,11 @@
+liburcu (0.13.2-1) unstable; urgency=medium
+
+  * [05fc1d0] New upstream version 0.13.2
+  * [95b7bdb] Update d/copyright
+  * [9bc5b15] Bump standards version to 4.6.1.0
+
+ -- Michael Jeanson <mjeanson@debian.org>  Fri, 19 Aug 2022 12:17:45 -0400
+
 liburcu (0.13.1-1) unstable; urgency=medium
 
   * [3f7883c] New upstream version 0.13.1
