@@ -1,3 +1,9 @@
+liburcu (0.13.2-1~ubuntu18.04.1) bionic; urgency=medium
+
+  * [05fc1d0] New upstream version 0.13.2
+
+ -- Michael Jeanson <mjeanson@debian.org>  Wed, 19 Oct 2022 15:22:42 -0400
+
 liburcu (0.13.1-1~ubuntu18.04.1) bionic; urgency=medium
 
   * [3f7883c] New upstream version 0.13.1
