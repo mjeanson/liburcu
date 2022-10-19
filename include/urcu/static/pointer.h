@@ -90,9 +90,18 @@ extern "C" {
 # define __URCU_DEREFERENCE_USE_ATOMIC_CONSUME
 #endif
 
+/*
+ * If p is const (the pointer itself, not what it points to), using
+ * __typeof__(p) would declare a const variable, leading to
+ * -Wincompatible-pointer-types errors.  Using the statement expression
+ * makes it an rvalue and gets rid of the const-ness.
+ */
 #ifdef __URCU_DEREFERENCE_USE_ATOMIC_CONSUME
 # define _rcu_dereference(p) __extension__ ({						\
-				__typeof__(p) _________p1;				\
+				__typeof__(__extension__ ({				\
+					__typeof__(p) __attribute__((unused)) _________p0 = { 0 }; \
+					_________p0;					\
+				})) _________p1;					\
 				__atomic_load(&(p), &_________p1, __ATOMIC_CONSUME);	\
 				(_________p1);						\
 			})
