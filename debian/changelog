@@ -1,4 +1,4 @@
-liburcu (0.13.2-1~ubuntu22.04.1) unstable; urgency=medium
+liburcu (0.13.2-1~ubuntu22.04.2) jammy; urgency=medium
 
   * [05fc1d0] New upstream version 0.13.2
   * [0736429] Prepare branch for jammy
