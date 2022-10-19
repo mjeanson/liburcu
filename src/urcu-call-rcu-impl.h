@@ -44,6 +44,7 @@
 #include <urcu/ref.h>
 #include "urcu-die.h"
 #include "urcu-utils.h"
+#include "compat-smp.h"
 
 #define SET_AFFINITY_CHECK_PERIOD		(1U << 8)	/* 256 */
 #define SET_AFFINITY_CHECK_PERIOD_MASK		(SET_AFFINITY_CHECK_PERIOD - 1)
@@ -120,11 +121,11 @@ static unsigned long registered_rculfhash_atfork_refcount;
  */
 
 static struct call_rcu_data **per_cpu_call_rcu_data;
-static long maxcpus;
+static long cpus_array_len;
 
-static void maxcpus_reset(void)
+static void cpus_array_len_reset(void)
 {
-	maxcpus = 0;
+	cpus_array_len = 0;
 }
 
 /* Allocate the array if it has not already been allocated. */
@@ -134,15 +135,15 @@ static void alloc_cpu_call_rcu_data(void)
 	struct call_rcu_data **p;
 	static int warned = 0;
 
-	if (maxcpus != 0)
+	if (cpus_array_len != 0)
 		return;
-	maxcpus = sysconf(_SC_NPROCESSORS_CONF);
-	if (maxcpus <= 0) {
+	cpus_array_len = get_possible_cpus_array_len();
+	if (cpus_array_len <= 0) {
 		return;
 	}
-	p = malloc(maxcpus * sizeof(*per_cpu_call_rcu_data));
+	p = malloc(cpus_array_len * sizeof(*per_cpu_call_rcu_data));
 	if (p != NULL) {
-		memset(p, '\0', maxcpus * sizeof(*per_cpu_call_rcu_data));
+		memset(p, '\0', cpus_array_len * sizeof(*per_cpu_call_rcu_data));
 		rcu_set_pointer(&per_cpu_call_rcu_data, p);
 	} else {
 		if (!warned) {
@@ -160,9 +161,9 @@ static void alloc_cpu_call_rcu_data(void)
  * constant.
  */
 static struct call_rcu_data **per_cpu_call_rcu_data = NULL;
-static const long maxcpus = -1;
+static const long cpus_array_len = -1;
 
-static void maxcpus_reset(void)
+static void cpus_array_len_reset(void)
 {
 }
 
@@ -240,17 +241,25 @@ static void call_rcu_wait(struct call_rcu_data *crdp)
 {
 	/* Read call_rcu list before read futex */
 	cmm_smp_mb();
-	if (uatomic_read(&crdp->futex) != -1)
-		return;
-	while (futex_async(&crdp->futex, FUTEX_WAIT, -1,
-			NULL, NULL, 0)) {
+	while (uatomic_read(&crdp->futex) == -1) {
+		if (!futex_async(&crdp->futex, FUTEX_WAIT, -1, NULL, NULL, 0)) {
+			/*
+			 * Prior queued wakeups queued by unrelated code
+			 * using the same address can cause futex wait to
+			 * return 0 even through the futex value is still
+			 * -1 (spurious wakeups). Check the value again
+			 * in user-space to validate whether it really
+			 * differs from -1.
+			 */
+			continue;
+		}
 		switch (errno) {
-		case EWOULDBLOCK:
+		case EAGAIN:
 			/* Value already changed. */
 			return;
 		case EINTR:
 			/* Retry if interrupted by signal. */
-			break;	/* Get out of switch. */
+			break;	/* Get out of switch. Check again. */
 		default:
 			/* Unexpected error. */
 			urcu_die(errno);
@@ -274,17 +283,25 @@ static void call_rcu_completion_wait(struct call_rcu_completion *completion)
 {
 	/* Read completion barrier count before read futex */
 	cmm_smp_mb();
-	if (uatomic_read(&completion->futex) != -1)
-		return;
-	while (futex_async(&completion->futex, FUTEX_WAIT, -1,
-			NULL, NULL, 0)) {
+	while (uatomic_read(&completion->futex) == -1) {
+		if (!futex_async(&completion->futex, FUTEX_WAIT, -1, NULL, NULL, 0)) {
+			/*
+			 * Prior queued wakeups queued by unrelated code
+			 * using the same address can cause futex wait to
+			 * return 0 even through the futex value is still
+			 * -1 (spurious wakeups). Check the value again
+			 * in user-space to validate whether it really
+			 * differs from -1.
+			 */
+			continue;
+		}
 		switch (errno) {
-		case EWOULDBLOCK:
+		case EAGAIN:
 			/* Value already changed. */
 			return;
 		case EINTR:
 			/* Retry if interrupted by signal. */
-			break;	/* Get out of switch. */
+			break;	/* Get out of switch. Check again. */
 		default:
 			/* Unexpected error. */
 			urcu_die(errno);
@@ -454,11 +471,11 @@ struct call_rcu_data *get_cpu_call_rcu_data(int cpu)
 	pcpu_crdp = rcu_dereference(per_cpu_call_rcu_data);
 	if (pcpu_crdp == NULL)
 		return NULL;
-	if (!warned && maxcpus > 0 && (cpu < 0 || maxcpus <= cpu)) {
+	if (!warned && cpus_array_len > 0 && (cpu < 0 || cpus_array_len <= cpu)) {
 		fprintf(stderr, "[error] liburcu: get CPU # out of range\n");
 		warned = 1;
 	}
-	if (cpu < 0 || maxcpus <= cpu)
+	if (cpu < 0 || cpus_array_len <= cpu)
 		return NULL;
 	return rcu_dereference(pcpu_crdp[cpu]);
 }
@@ -516,7 +533,7 @@ int set_cpu_call_rcu_data(int cpu, struct call_rcu_data *crdp)
 
 	call_rcu_lock(&call_rcu_mutex);
 	alloc_cpu_call_rcu_data();
-	if (cpu < 0 || maxcpus <= cpu) {
+	if (cpu < 0 || cpus_array_len <= cpu) {
 		if (!warned) {
 			fprintf(stderr, "[error] liburcu: set CPU # out of range\n");
 			warned = 1;
@@ -581,7 +598,7 @@ struct call_rcu_data *get_call_rcu_data(void)
 	if (URCU_TLS(thread_call_rcu_data) != NULL)
 		return URCU_TLS(thread_call_rcu_data);
 
-	if (maxcpus > 0) {
+	if (cpus_array_len > 0) {
 		crd = get_cpu_call_rcu_data(urcu_sched_getcpu());
 		if (crd)
 			return crd;
@@ -632,7 +649,7 @@ int create_all_cpu_call_rcu_data(unsigned long flags)
 	call_rcu_lock(&call_rcu_mutex);
 	alloc_cpu_call_rcu_data();
 	call_rcu_unlock(&call_rcu_mutex);
-	if (maxcpus <= 0) {
+	if (cpus_array_len <= 0) {
 		errno = EINVAL;
 		return -EINVAL;
 	}
@@ -640,7 +657,7 @@ int create_all_cpu_call_rcu_data(unsigned long flags)
 		errno = ENOMEM;
 		return -ENOMEM;
 	}
-	for (i = 0; i < maxcpus; i++) {
+	for (i = 0; i < cpus_array_len; i++) {
 		call_rcu_lock(&call_rcu_mutex);
 		if (get_cpu_call_rcu_data(i)) {
 			call_rcu_unlock(&call_rcu_mutex);
@@ -780,10 +797,10 @@ void free_all_cpu_call_rcu_data(void)
 	struct call_rcu_data **crdp;
 	static int warned = 0;
 
-	if (maxcpus <= 0)
+	if (cpus_array_len <= 0)
 		return;
 
-	crdp = malloc(sizeof(*crdp) * maxcpus);
+	crdp = malloc(sizeof(*crdp) * cpus_array_len);
 	if (!crdp) {
 		if (!warned) {
 			fprintf(stderr, "[error] liburcu: unable to allocate per-CPU pointer array\n");
@@ -792,7 +809,7 @@ void free_all_cpu_call_rcu_data(void)
 		return;
 	}
 
-	for (cpu = 0; cpu < maxcpus; cpu++) {
+	for (cpu = 0; cpu < cpus_array_len; cpu++) {
 		crdp[cpu] = get_cpu_call_rcu_data(cpu);
 		if (crdp[cpu] == NULL)
 			continue;
@@ -803,7 +820,7 @@ void free_all_cpu_call_rcu_data(void)
 	 * call_rcu_data to become quiescent.
 	 */
 	synchronize_rcu();
-	for (cpu = 0; cpu < maxcpus; cpu++) {
+	for (cpu = 0; cpu < cpus_array_len; cpu++) {
 		if (crdp[cpu] == NULL)
 			continue;
 		call_rcu_data_free(crdp[cpu]);
@@ -981,7 +998,7 @@ void call_rcu_after_fork_child(void)
 	(void)get_default_call_rcu_data();
 
 	/* Cleanup call_rcu_data pointers before use */
-	maxcpus_reset();
+	cpus_array_len_reset();
 	free(per_cpu_call_rcu_data);
 	rcu_set_pointer(&per_cpu_call_rcu_data, NULL);
 	URCU_TLS(thread_call_rcu_data) = NULL;
