@@ -16,6 +16,7 @@ nobase_include_HEADERS = \
 	urcu/arch/sparc64.h \
 	urcu/arch/tile.h \
 	urcu/arch/x86.h \
+	urcu/assert.h \
 	urcu/call-rcu.h \
 	urcu/cds.h \
 	urcu/compiler.h \
@@ -86,7 +87,8 @@ nobase_include_HEADERS = \
 	urcu/urcu-signal.h \
 	urcu/wfcqueue.h \
 	urcu/wfqueue.h \
-	urcu/wfstack.h
+	urcu/wfstack.h \
+	urcu/urcu-poll.h
 
 # Don't distribute generated headers
 nobase_nodist_include_HEADERS = urcu/config.h

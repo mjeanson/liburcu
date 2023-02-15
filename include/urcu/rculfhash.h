@@ -110,6 +110,16 @@ void cds_lfht_node_init(struct cds_lfht_node *node __attribute__((unused)))
 }
 
 /*
+ * cds_lfht_node_init_deleted - initialize a hash table node to "removed" state
+ * @node: the node to initialize.
+ *
+ * Initialize the node such that cds_lfht_is_node_deleted() can be used
+ * on the node before it is added to a hash table.
+ */
+extern
+void cds_lfht_node_init_deleted(struct cds_lfht_node *node);
+
+/*
  * Hash table creation flags.
  */
 enum {
@@ -237,16 +247,16 @@ struct cds_lfht *cds_lfht_new(unsigned long init_size,
  *
  * Return 0 on success, negative error value on error.
 
+ * Threads calling this API need to be registered RCU read-side threads.
+ *
  * Prior to liburcu 0.10:
- * - Threads calling this API need to be registered RCU read-side
- *   threads.
  * - cds_lfht_destroy should *not* be called from a RCU read-side
  *   critical section. It should *not* be called from a call_rcu thread
  *   context neither.
  *
  * Starting from liburcu 0.10, rculfhash implements its own worker
- * thread to handle resize operations, which removes RCU requirements on
- * cds_lfht_destroy.
+ * thread to handle resize operations, which removes the above RCU
+ * read-side critical section requirement on cds_lfht_destroy.
  */
 extern
 int cds_lfht_destroy(struct cds_lfht *ht, pthread_attr_t **attr);

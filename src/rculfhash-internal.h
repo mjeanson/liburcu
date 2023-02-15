@@ -24,10 +24,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include <urcu/assert.h>
 #include <urcu/rculfhash.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <assert.h>
+
+#include "workqueue.h"
 
 #ifdef DEBUG
 #define dbg_printf(fmt, args...)     printf("[debug rculfhash] " fmt, ## args)
@@ -82,11 +84,13 @@ struct cds_lfht {
 	 * therefore cause grace-period deadlock if we hold off RCU G.P.
 	 * completion.
 	 */
-	pthread_mutex_t resize_mutex;	/* resize mutex: add/del mutex */
-	pthread_attr_t *resize_attr;	/* Resize threads attributes */
+	pthread_mutex_t resize_mutex;		/* resize mutex: add/del mutex */
+	pthread_attr_t *caller_resize_attr;	/* resize threads attributes from lfht_new caller */
+	pthread_attr_t resize_attr;
 	unsigned int in_progress_destroy;
 	unsigned long resize_target;
 	int resize_initiated;
+	struct urcu_work destroy_work;
 
 	/*
 	 * Variables needed for add and remove fast-paths.
@@ -170,7 +174,7 @@ struct cds_lfht *__default_alloc_cds_lfht(
 	struct cds_lfht *ht;
 
 	ht = calloc(1, cds_lfht_size);
-	assert(ht);
+	urcu_posix_assert(ht);
 
 	ht->mm = mm;
 	ht->bucket_at = mm->bucket_at;

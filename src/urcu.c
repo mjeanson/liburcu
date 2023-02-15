@@ -30,7 +30,6 @@
 #include <stdio.h>
 #include <pthread.h>
 #include <signal.h>
-#include <assert.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
@@ -39,6 +38,7 @@
 #include <poll.h>
 
 #include <urcu/config.h>
+#include <urcu/assert.h>
 #include <urcu/arch.h>
 #include <urcu/wfcqueue.h>
 #include <urcu/map/urcu.h>
@@ -109,8 +109,12 @@ void rcu_init(void)
 static int init_done;
 
 void __attribute__((constructor)) rcu_init(void);
-void __attribute__((destructor)) rcu_exit(void);
+
+static DEFINE_URCU_TLS(int, rcu_signal_was_blocked);
 #endif
+
+void __attribute__((destructor)) rcu_exit(void);
+static void urcu_call_rcu_exit(void);
 
 /*
  * rcu_gp_lock ensures mutual exclusion between threads calling
@@ -449,7 +453,7 @@ void synchronize_rcu(void)
 	/*
 	 * Wait for readers to observe original parity or be quiescent.
 	 * wait_for_readers() can release and grab again rcu_registry_lock
-	 * interally.
+	 * internally.
 	 */
 	wait_for_readers(&registry, &cur_snap_readers, &qsreaders);
 
@@ -491,7 +495,7 @@ void synchronize_rcu(void)
 	/*
 	 * Wait for readers to observe new parity or be quiescent.
 	 * wait_for_readers() can release and grab again rcu_registry_lock
-	 * interally.
+	 * internally.
 	 */
 	wait_for_readers(&cur_snap_readers, NULL, &qsreaders);
 
@@ -537,14 +541,58 @@ int rcu_read_ongoing(void)
 	return _rcu_read_ongoing();
 }
 
+#ifdef RCU_SIGNAL
+/*
+ * Make sure the signal used by the urcu-signal flavor is unblocked
+ * while the thread is registered.
+ */
+static
+void urcu_signal_unblock(void)
+{
+	sigset_t mask, oldmask;
+	int ret;
+
+	ret = sigemptyset(&mask);
+	urcu_posix_assert(!ret);
+	ret = sigaddset(&mask, SIGRCU);
+	urcu_posix_assert(!ret);
+	ret = pthread_sigmask(SIG_UNBLOCK, &mask, &oldmask);
+	urcu_posix_assert(!ret);
+	URCU_TLS(rcu_signal_was_blocked) = sigismember(&oldmask, SIGRCU);
+}
+
+static
+void urcu_signal_restore(void)
+{
+	sigset_t mask;
+	int ret;
+
+	if (!URCU_TLS(rcu_signal_was_blocked))
+		return;
+	ret = sigemptyset(&mask);
+	urcu_posix_assert(!ret);
+	ret = sigaddset(&mask, SIGRCU);
+	urcu_posix_assert(!ret);
+	ret = pthread_sigmask(SIG_BLOCK, &mask, NULL);
+	urcu_posix_assert(!ret);
+}
+#else
+static
+void urcu_signal_unblock(void) { }
+static
+void urcu_signal_restore(void) { }
+#endif
+
 void rcu_register_thread(void)
 {
+	urcu_signal_unblock();
+
 	URCU_TLS(rcu_reader).tid = pthread_self();
-	assert(URCU_TLS(rcu_reader).need_mb == 0);
-	assert(!(URCU_TLS(rcu_reader).ctr & URCU_GP_CTR_NEST_MASK));
+	urcu_posix_assert(URCU_TLS(rcu_reader).need_mb == 0);
+	urcu_posix_assert(!(URCU_TLS(rcu_reader).ctr & URCU_GP_CTR_NEST_MASK));
 
 	mutex_lock(&rcu_registry_lock);
-	assert(!URCU_TLS(rcu_reader).registered);
+	urcu_posix_assert(!URCU_TLS(rcu_reader).registered);
 	URCU_TLS(rcu_reader).registered = 1;
 	rcu_init();	/* In case gcc does not support constructor attribute */
 	cds_list_add(&URCU_TLS(rcu_reader).node, &registry);
@@ -554,10 +602,12 @@ void rcu_register_thread(void)
 void rcu_unregister_thread(void)
 {
 	mutex_lock(&rcu_registry_lock);
-	assert(URCU_TLS(rcu_reader).registered);
+	urcu_posix_assert(URCU_TLS(rcu_reader).registered);
 	URCU_TLS(rcu_reader).registered = 0;
 	cds_list_del(&URCU_TLS(rcu_reader).node);
 	mutex_unlock(&rcu_registry_lock);
+
+	urcu_signal_restore();
 }
 
 #ifdef RCU_MEMBARRIER
@@ -648,21 +698,24 @@ void rcu_init(void)
 		urcu_die(errno);
 }
 
-void rcu_exit(void)
-{
-	/*
-	 * Don't unregister the SIGRCU signal handler anymore, because
-	 * call_rcu threads could still be using it shortly before the
-	 * application exits.
-	 * Assertion disabled because call_rcu threads are now rcu
-	 * readers, and left running at exit.
-	 * assert(cds_list_empty(&registry));
-	 */
-}
+/*
+ * Don't unregister the SIGRCU signal handler anymore, because
+ * call_rcu threads could still be using it shortly before the
+ * application exits.
+ * Assertion disabled because call_rcu threads are now rcu
+ * readers, and left running at exit.
+ * urcu_posix_assert(cds_list_empty(&registry));
+ */
 
 #endif /* #ifdef RCU_SIGNAL */
+
+void rcu_exit(void)
+{
+	urcu_call_rcu_exit();
+}
 
 DEFINE_RCU_FLAVOR(rcu_flavor);
 
 #include "urcu-call-rcu-impl.h"
 #include "urcu-defer-impl.h"
+#include "urcu-poll-impl.h"

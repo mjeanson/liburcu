@@ -27,7 +27,7 @@
 #include <stdio.h>
 #include <pthread.h>
 #include <signal.h>
-#include <assert.h>
+#include <urcu/assert.h>
 #include <urcu/uatomic.h>
 
 /*
@@ -41,7 +41,7 @@
 /*
  * It does not really matter if the constructor is called before using
  * the library, as long as the caller checks if __rcu_cas_avail < 0 and calls
- * compat_arch_init() explicitely if needed.
+ * compat_arch_init() explicitly if needed.
  */
 int __attribute__((constructor)) __rcu_cas_init(void);
 
@@ -95,11 +95,11 @@ static void mutex_lock_signal_save(pthread_mutex_t *mutex, sigset_t *oldmask)
 
 	/* Disable signals */
 	ret = sigfillset(&newmask);
-	assert(!ret);
+	urcu_posix_assert(!ret);
 	ret = pthread_sigmask(SIG_BLOCK, &newmask, oldmask);
-	assert(!ret);
+	urcu_posix_assert(!ret);
 	ret = pthread_mutex_lock(&__urcu_x86_compat_mutex);
-	assert(!ret);
+	urcu_posix_assert(!ret);
 }
 
 static void mutex_lock_signal_restore(pthread_mutex_t *mutex, sigset_t *oldmask)
@@ -107,9 +107,9 @@ static void mutex_lock_signal_restore(pthread_mutex_t *mutex, sigset_t *oldmask)
 	int ret;
 
 	ret = pthread_mutex_unlock(&__urcu_x86_compat_mutex);
-	assert(!ret);
+	urcu_posix_assert(!ret);
 	ret = pthread_sigmask(SIG_SETMASK, oldmask, NULL);
-	assert(!ret);
+	urcu_posix_assert(!ret);
 }
 
 unsigned long _compat_uatomic_set(void *addr, unsigned long _new, int len)

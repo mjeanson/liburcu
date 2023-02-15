@@ -34,11 +34,15 @@ extern "C" {
 
 #ifdef CONFIG_RCU_TLS
 
-#if defined (__cplusplus) && (__cplusplus >= 201103L)
-# define URCU_TLS_STORAGE_CLASS	thread_local
-#elif defined (__STDC_VERSION__) && (__STDC_VERSION__ >= 201112L)
-# define URCU_TLS_STORAGE_CLASS	_Thread_local
-#elif defined (_MSC_VER)
+/*
+ * Default to '__thread' on all C and C++ compilers except MSVC. While C11 has
+ * '_Thread_local' and C++11 has 'thread_local', only '__thread' seems to have
+ * a compatible implementation when linking public extern symbols across
+ * language boundaries.
+ *
+ * For more details, see 'https://gcc.gnu.org/onlinedocs/gcc/Thread-Local.html'.
+ */
+#if defined(_MSC_VER)
 # define URCU_TLS_STORAGE_CLASS	__declspec(thread)
 #else
 # define URCU_TLS_STORAGE_CLASS	__thread
