@@ -21,7 +21,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <rculfhash-internal.h>
+#include <urcu/assert.h>
+#include "rculfhash-internal.h"
 
 static
 void cds_lfht_alloc_bucket_table(struct cds_lfht *ht, unsigned long order)
@@ -29,11 +30,11 @@ void cds_lfht_alloc_bucket_table(struct cds_lfht *ht, unsigned long order)
 	if (order == 0) {
 		ht->tbl_order[0] = calloc(ht->min_nr_alloc_buckets,
 			sizeof(struct cds_lfht_node));
-		assert(ht->tbl_order[0]);
+		urcu_posix_assert(ht->tbl_order[0]);
 	} else if (order > ht->min_alloc_buckets_order) {
 		ht->tbl_order[order] = calloc(1UL << (order -1),
 			sizeof(struct cds_lfht_node));
-		assert(ht->tbl_order[order]);
+		urcu_posix_assert(ht->tbl_order[order]);
 	}
 	/* Nothing to do for 0 < order && order <= ht->min_alloc_buckets_order */
 }

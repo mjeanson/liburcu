@@ -80,14 +80,27 @@ struct cds_lfs_stack {
 };
 
 /*
- * The transparent union allows calling functions that work on both
- * struct cds_lfs_stack and struct __cds_lfs_stack on any of those two
- * types.
+ * In C, the transparent union allows calling functions that work on
+ * both struct cds_lfs_stack and struct __cds_lfs_stack on any of those
+ * two types.
+ *
+ * In C++, implement static inline wrappers using function overloading
+ * to obtain an API similar to C.
+ *
+ * Avoid complaints from clang++ not knowing the transparent union
+ * attribute.
  */
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wignored-attributes"
+#endif
 typedef union {
 	struct __cds_lfs_stack *_s;
 	struct cds_lfs_stack *s;
 } __attribute__((__transparent_union__)) cds_lfs_stack_ptr_t;
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
 
 #ifdef _LGPL_SOURCE
 
@@ -255,6 +268,49 @@ extern struct cds_lfs_head *__cds_lfs_pop_all(cds_lfs_stack_ptr_t s);
 
 #ifdef __cplusplus
 }
-#endif
+
+/*
+ * In C++, implement static inline wrappers using function overloading
+ * to obtain an API similar to C.
+ */
+
+static inline cds_lfs_stack_ptr_t cds_lfs_stack_cast(struct __cds_lfs_stack *s)
+{
+	cds_lfs_stack_ptr_t ret = {
+		._s = s,
+	};
+	return ret;
+}
+
+static inline cds_lfs_stack_ptr_t cds_lfs_stack_cast(struct cds_lfs_stack *s)
+{
+	cds_lfs_stack_ptr_t ret = {
+		.s = s,
+	};
+	return ret;
+}
+
+template<typename T> static inline bool cds_lfs_empty(T s)
+{
+	return cds_lfs_empty(cds_lfs_stack_cast(s));
+}
+
+template<typename T> static inline bool cds_lfs_push(T s,
+			struct cds_lfs_node *node)
+{
+	return cds_lfs_push(cds_lfs_stack_cast(s), node);
+}
+
+template<typename T> static inline struct cds_lfs_node *__cds_lfs_pop(T s)
+{
+	return __cds_lfs_pop(cds_lfs_stack_cast(s));
+}
+
+template<typename T> static inline struct cds_lfs_head *__cds_lfs_pop_all(T s)
+{
+	return __cds_lfs_pop_all(cds_lfs_stack_cast(s));
+}
+
+#endif	/* __cplusplus */
 
 #endif /* _URCU_LFSTACK_H */

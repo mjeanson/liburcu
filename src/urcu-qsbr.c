@@ -28,13 +28,13 @@
 #include <stdio.h>
 #include <pthread.h>
 #include <signal.h>
-#include <assert.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
 #include <errno.h>
 #include <poll.h>
 
+#include <urcu/assert.h>
 #include <urcu/wfcqueue.h>
 #include <urcu/map/urcu-qsbr.h>
 #define BUILD_QSBR_LIB
@@ -53,6 +53,7 @@
 #define _LGPL_SOURCE
 
 void __attribute__((destructor)) urcu_qsbr_exit(void);
+static void urcu_call_rcu_exit(void);
 
 /*
  * rcu_gp_lock ensures mutual exclusion between threads calling
@@ -286,7 +287,7 @@ void urcu_qsbr_synchronize_rcu(void)
 	/*
 	 * Wait for readers to observe original parity or be quiescent.
 	 * wait_for_readers() can release and grab again rcu_registry_lock
-	 * interally.
+	 * internally.
 	 */
 	wait_for_readers(&registry, &cur_snap_readers, &qsreaders);
 
@@ -329,7 +330,7 @@ void urcu_qsbr_synchronize_rcu(void)
 	/*
 	 * Wait for readers to observe new parity or be quiescent.
 	 * wait_for_readers() can release and grab again rcu_registry_lock
-	 * interally.
+	 * internally.
 	 */
 	wait_for_readers(&cur_snap_readers, NULL, &qsreaders);
 
@@ -418,7 +419,7 @@ void urcu_qsbr_synchronize_rcu(void)
 	/*
 	 * Wait for readers to observe new count of be quiescent.
 	 * wait_for_readers() can release and grab again rcu_registry_lock
-	 * interally.
+	 * internally.
 	 */
 	wait_for_readers(&registry, NULL, &qsreaders);
 
@@ -478,10 +479,10 @@ void urcu_qsbr_thread_online(void)
 void urcu_qsbr_register_thread(void)
 {
 	URCU_TLS(urcu_qsbr_reader).tid = pthread_self();
-	assert(URCU_TLS(urcu_qsbr_reader).ctr == 0);
+	urcu_posix_assert(URCU_TLS(urcu_qsbr_reader).ctr == 0);
 
 	mutex_lock(&rcu_registry_lock);
-	assert(!URCU_TLS(urcu_qsbr_reader).registered);
+	urcu_posix_assert(!URCU_TLS(urcu_qsbr_reader).registered);
 	URCU_TLS(urcu_qsbr_reader).registered = 1;
 	cds_list_add(&URCU_TLS(urcu_qsbr_reader).node, &registry);
 	mutex_unlock(&rcu_registry_lock);
@@ -495,7 +496,7 @@ void urcu_qsbr_unregister_thread(void)
 	 * with a waiting writer.
 	 */
 	_urcu_qsbr_thread_offline();
-	assert(URCU_TLS(urcu_qsbr_reader).registered);
+	urcu_posix_assert(URCU_TLS(urcu_qsbr_reader).registered);
 	URCU_TLS(urcu_qsbr_reader).registered = 0;
 	mutex_lock(&rcu_registry_lock);
 	cds_list_del(&URCU_TLS(urcu_qsbr_reader).node);
@@ -507,11 +508,13 @@ void urcu_qsbr_exit(void)
 	/*
 	 * Assertion disabled because call_rcu threads are now rcu
 	 * readers, and left running at exit.
-	 * assert(cds_list_empty(&registry));
+	 * urcu_posix_assert(cds_list_empty(&registry));
 	 */
+	urcu_call_rcu_exit();
 }
 
 DEFINE_RCU_FLAVOR(rcu_flavor);
 
 #include "urcu-call-rcu-impl.h"
 #include "urcu-defer-impl.h"
+#include "urcu-poll-impl.h"

@@ -27,9 +27,9 @@
  */
 
 #include <pthread.h>
-#include <assert.h>
 #include <poll.h>
 #include <stdbool.h>
+#include <urcu/assert.h>
 #include <urcu/compiler.h>
 #include <urcu/uatomic.h>
 
@@ -37,7 +37,7 @@
 extern "C" {
 #endif
 
-#define CDS_WFS_END			((void *) 0x1UL)
+#define CDS_WFS_END			((struct cds_wfs_head *) 0x1UL)
 #define CDS_WFS_ADAPT_ATTEMPTS		10	/* Retry if being set */
 #define CDS_WFS_WAIT			10	/* Wait 10 ms if being set */
 
@@ -96,7 +96,7 @@ void _cds_wfs_init(struct cds_wfs_stack *s)
 
 	s->head = CDS_WFS_END;
 	ret = pthread_mutex_init(&s->lock, NULL);
-	assert(!ret);
+	urcu_posix_assert(!ret);
 }
 
 /*
@@ -107,7 +107,7 @@ static inline
 void _cds_wfs_destroy(struct cds_wfs_stack *s)
 {
 	int ret = pthread_mutex_destroy(&s->lock);
-	assert(!ret);
+	urcu_posix_assert(!ret);
 }
 
 static inline bool ___cds_wfs_end(void *node)
@@ -142,7 +142,7 @@ int _cds_wfs_push(cds_wfs_stack_ptr_t u_stack, struct cds_wfs_node *node)
 	struct __cds_wfs_stack *s = u_stack._s;
 	struct cds_wfs_head *old_head, *new_head;
 
-	assert(node->next == NULL);
+	urcu_posix_assert(node->next == NULL);
 	new_head = caa_container_of(node, struct cds_wfs_head, node);
 	/*
 	 * uatomic_xchg() implicit memory barrier orders earlier stores
@@ -323,7 +323,7 @@ static inline void _cds_wfs_pop_lock(struct cds_wfs_stack *s)
 	int ret;
 
 	ret = pthread_mutex_lock(&s->lock);
-	assert(!ret);
+	urcu_posix_assert(!ret);
 }
 
 /*
@@ -334,7 +334,7 @@ static inline void _cds_wfs_pop_unlock(struct cds_wfs_stack *s)
 	int ret;
 
 	ret = pthread_mutex_unlock(&s->lock);
-	assert(!ret);
+	urcu_posix_assert(!ret);
 }
 
 /*
@@ -345,9 +345,11 @@ struct cds_wfs_node *
 _cds_wfs_pop_with_state_blocking(struct cds_wfs_stack *s, int *state)
 {
 	struct cds_wfs_node *retnode;
+	cds_wfs_stack_ptr_t stack;
 
 	_cds_wfs_pop_lock(s);
-	retnode = ___cds_wfs_pop_with_state_blocking(s, state);
+	stack.s = s;
+	retnode = ___cds_wfs_pop_with_state_blocking(stack, state);
 	_cds_wfs_pop_unlock(s);
 	return retnode;
 }
@@ -370,9 +372,11 @@ struct cds_wfs_head *
 _cds_wfs_pop_all_blocking(struct cds_wfs_stack *s)
 {
 	struct cds_wfs_head *rethead;
+	cds_wfs_stack_ptr_t stack;
 
 	_cds_wfs_pop_lock(s);
-	rethead = ___cds_wfs_pop_all(s);
+	stack.s = s;
+	rethead = ___cds_wfs_pop_all(stack);
 	_cds_wfs_pop_unlock(s);
 	return rethead;
 }

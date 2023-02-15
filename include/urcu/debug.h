@@ -19,14 +19,12 @@
  * all copies or substantial portions of the Software.
  */
 
-#include <assert.h>
+#include <urcu/assert.h>
 
-#include <urcu/config.h>
-
-#if defined(DEBUG_RCU) || defined(CONFIG_RCU_DEBUG)
-#define urcu_assert(...)	assert(__VA_ARGS__)
-#else
-#define urcu_assert(...)
-#endif
+/*
+ * For backward compatibility reasons, this file must expose the urcu_assert()
+ * macro.
+ */
+#define urcu_assert(_cond) urcu_assert_debug(_cond)
 
 #endif /* _URCU_DEBUG_H */

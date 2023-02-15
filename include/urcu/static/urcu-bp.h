@@ -33,6 +33,7 @@
 #include <pthread.h>
 #include <unistd.h>
 
+#include <urcu/debug.h>
 #include <urcu/config.h>
 #include <urcu/compiler.h>
 #include <urcu/arch.h>
@@ -40,7 +41,6 @@
 #include <urcu/uatomic.h>
 #include <urcu/list.h>
 #include <urcu/tls-compat.h>
-#include <urcu/debug.h>
 
 /*
  * This code section can only be included in LGPL 2.1 compatible source code.
@@ -169,7 +169,7 @@ static inline void _urcu_bp_read_lock(void)
 		urcu_bp_register(); /* If not yet registered. */
 	cmm_barrier();	/* Ensure the compiler does not reorder us with mutex */
 	tmp = URCU_TLS(urcu_bp_reader)->ctr;
-	urcu_assert((tmp & URCU_BP_GP_CTR_NEST_MASK) != URCU_BP_GP_CTR_NEST_MASK);
+	urcu_assert_debug((tmp & URCU_BP_GP_CTR_NEST_MASK) != URCU_BP_GP_CTR_NEST_MASK);
 	_urcu_bp_read_lock_update(tmp);
 }
 
@@ -183,7 +183,7 @@ static inline void _urcu_bp_read_unlock(void)
 	unsigned long tmp;
 
 	tmp = URCU_TLS(urcu_bp_reader)->ctr;
-	urcu_assert(tmp & URCU_BP_GP_CTR_NEST_MASK);
+	urcu_assert_debug(tmp & URCU_BP_GP_CTR_NEST_MASK);
 	/* Finish using rcu before decrementing the pointer. */
 	urcu_bp_smp_mb_slave();
 	_CMM_STORE_SHARED(URCU_TLS(urcu_bp_reader)->ctr, tmp - URCU_BP_GP_COUNT);

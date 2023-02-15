@@ -28,7 +28,7 @@
 
 #include <stdbool.h>
 #include <pthread.h>
-#include <assert.h>
+#include <urcu/assert.h>
 #include <urcu/uatomic.h>
 #include <urcu-pointer.h>
 
@@ -76,7 +76,7 @@ void _cds_lfs_init(struct cds_lfs_stack *s)
 
 	s->head = NULL;
 	ret = pthread_mutex_init(&s->lock, NULL);
-	assert(!ret);
+	urcu_posix_assert(!ret);
 }
 
 /*
@@ -87,7 +87,7 @@ static inline
 void _cds_lfs_destroy(struct cds_lfs_stack *s)
 {
         int ret = pthread_mutex_destroy(&s->lock);
-	assert(!ret);
+	urcu_posix_assert(!ret);
 }
 
 /*
@@ -267,7 +267,7 @@ static inline void _cds_lfs_pop_lock(struct cds_lfs_stack *s)
 	int ret;
 
 	ret = pthread_mutex_lock(&s->lock);
-	assert(!ret);
+	urcu_posix_assert(!ret);
 }
 
 /*
@@ -278,7 +278,7 @@ static inline void _cds_lfs_pop_unlock(struct cds_lfs_stack *s)
 	int ret;
 
 	ret = pthread_mutex_unlock(&s->lock);
-	assert(!ret);
+	urcu_posix_assert(!ret);
 }
 
 /*
@@ -289,9 +289,11 @@ struct cds_lfs_node *
 _cds_lfs_pop_blocking(struct cds_lfs_stack *s)
 {
 	struct cds_lfs_node *retnode;
+	cds_lfs_stack_ptr_t stack;
 
 	_cds_lfs_pop_lock(s);
-	retnode = ___cds_lfs_pop(s);
+	stack.s = s;
+	retnode = ___cds_lfs_pop(stack);
 	_cds_lfs_pop_unlock(s);
 	return retnode;
 }
@@ -304,9 +306,11 @@ struct cds_lfs_head *
 _cds_lfs_pop_all_blocking(struct cds_lfs_stack *s)
 {
 	struct cds_lfs_head *rethead;
+	cds_lfs_stack_ptr_t stack;
 
 	_cds_lfs_pop_lock(s);
-	rethead = ___cds_lfs_pop_all(s);
+	stack.s = s;
+	rethead = ___cds_lfs_pop_all(stack);
 	_cds_lfs_pop_unlock(s);
 	return rethead;
 }

@@ -28,10 +28,10 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include <stdio.h>
-#include <assert.h>
 #include <sched.h>
 #include <errno.h>
 
+#include <urcu/assert.h>
 #include <urcu/arch.h>
 #include <urcu/tls-compat.h>
 
@@ -88,8 +88,8 @@ static void test_rcu(void)
 	rcu_read_lock();
 	rcu_read_unlock();
 
-	node = malloc(sizeof(*node));
-	assert(node);
+	node = (struct test_node *) malloc(sizeof(*node));
+	urcu_posix_assert(node);
 
 	call_rcu(&node->head, cb);
 

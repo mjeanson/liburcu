@@ -25,7 +25,6 @@
  */
 
 #include <pthread.h>
-#include <assert.h>
 #include <stdbool.h>
 #include <urcu/compiler.h>
 #include <urcu/arch.h>
@@ -74,17 +73,30 @@ struct cds_wfcq_head {
 	pthread_mutex_t lock;
 };
 
-#ifndef __cplusplus
 /*
- * The transparent union allows calling functions that work on both
+ * In C, the transparent union allows calling functions that work on both
  * struct cds_wfcq_head and struct __cds_wfcq_head on any of those two
  * types.
+ *
+ * In C++, implement static inline wrappers using function overloading
+ * to obtain an API similar to C.
+ *
+ * Avoid complaints from clang++ not knowing the transparent union
+ * attribute.
  */
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wignored-attributes"
+#endif
 typedef union {
 	struct __cds_wfcq_head *_h;
 	struct cds_wfcq_head *h;
 } __attribute__((__transparent_union__)) cds_wfcq_head_ptr_t;
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
 
+#ifndef __cplusplus
 /*
  * This static inline is only present for compatibility with C++. It is
  * effect-less in C.
@@ -104,19 +116,20 @@ static inline struct cds_wfcq_head *cds_wfcq_head_cast(struct cds_wfcq_head *hea
 }
 #else /* #ifndef __cplusplus */
 
-/* C++ ignores transparent union. */
-typedef union {
-	struct __cds_wfcq_head *_h;
-	struct cds_wfcq_head *h;
-} cds_wfcq_head_ptr_t;
-
-/* C++ ignores transparent union. Requires an explicit conversion. */
+/*
+ * This static inline is used by internally in the static inline
+ * implementation of the API.
+ */
 static inline cds_wfcq_head_ptr_t __cds_wfcq_head_cast(struct __cds_wfcq_head *head)
 {
 	cds_wfcq_head_ptr_t ret = { ._h = head };
 	return ret;
 }
-/* C++ ignores transparent union. Requires an explicit conversion. */
+
+/*
+ * This static inline is used by internally in the static inline
+ * implementation of the API.
+ */
 static inline cds_wfcq_head_ptr_t cds_wfcq_head_cast(struct cds_wfcq_head *head)
 {
 	cds_wfcq_head_ptr_t ret = { .h = head };
@@ -483,6 +496,115 @@ extern struct cds_wfcq_node *__cds_wfcq_next_nonblocking(
 
 #ifdef __cplusplus
 }
+
+/*
+ * In C++, implement static inline wrappers using function overloading
+ * to obtain an API similar to C.
+ */
+
+static inline cds_wfcq_head_ptr_t cds_wfcq_head_cast_cpp(struct __cds_wfcq_head *head)
+{
+	cds_wfcq_head_ptr_t ret = { ._h = head };
+	return ret;
+}
+
+static inline cds_wfcq_head_ptr_t cds_wfcq_head_cast_cpp(struct cds_wfcq_head *head)
+{
+	cds_wfcq_head_ptr_t ret = { .h = head };
+	return ret;
+}
+
+template<typename T> static inline bool cds_wfcq_empty(T head,
+		struct cds_wfcq_tail *tail)
+{
+	return cds_wfcq_empty(cds_wfcq_head_cast_cpp(head), tail);
+}
+
+template<typename T> static inline bool cds_wfcq_enqueue(T head,
+		struct cds_wfcq_tail *tail,
+		struct cds_wfcq_node *node)
+{
+	return cds_wfcq_enqueue(cds_wfcq_head_cast_cpp(head), tail, node);
+}
+
+template<typename T> static inline struct cds_wfcq_node *__cds_wfcq_dequeue_blocking(
+		T head, struct cds_wfcq_tail *tail)
+{
+	return __cds_wfcq_dequeue_blocking(cds_wfcq_head_cast_cpp(head), tail);
+}
+
+template<typename T> static inline struct cds_wfcq_node *__cds_wfcq_dequeue_with_state_blocking(
+		T head, struct cds_wfcq_tail *tail, int *state)
+{
+	return __cds_wfcq_dequeue_with_state_blocking(cds_wfcq_head_cast_cpp(head),
+			tail, state);
+}
+
+template<typename T> static inline struct cds_wfcq_node *__cds_wfcq_dequeue_nonblocking(
+		T head, struct cds_wfcq_tail *tail)
+{
+	return __cds_wfcq_dequeue_nonblocking(cds_wfcq_head_cast_cpp(head), tail);
+}
+
+template<typename T> static inline struct cds_wfcq_node *__cds_wfcq_dequeue_with_state_nonblocking(
+		T head, struct cds_wfcq_tail *tail, int *state)
+{
+	return __cds_wfcq_dequeue_with_state_nonblocking(cds_wfcq_head_cast_cpp(head),
+			tail, state);
+}
+
+template<typename T, typename U> static inline enum cds_wfcq_ret __cds_wfcq_splice_blocking(
+		T dest_q_head,
+		struct cds_wfcq_tail *dest_q_tail,
+		U src_q_head,
+		struct cds_wfcq_tail *src_q_tail)
+{
+	return __cds_wfcq_splice_blocking(cds_wfcq_head_cast_cpp(dest_q_head),
+			dest_q_tail,
+			cds_wfcq_head_cast_cpp(src_q_head),
+			src_q_tail);
+}
+
+template<typename T, typename U> static inline enum cds_wfcq_ret __cds_wfcq_splice_nonblocking(
+		T dest_q_head,
+		struct cds_wfcq_tail *dest_q_tail,
+		U *src_q_head,
+		struct cds_wfcq_tail *src_q_tail)
+{
+	return __cds_wfcq_splice_nonblocking(cds_wfcq_head_cast_cpp(dest_q_head),
+			dest_q_tail,
+			cds_wfcq_head_cast_cpp(src_q_head),
+			src_q_tail);
+}
+
+template<typename T> static inline struct cds_wfcq_node *__cds_wfcq_first_blocking(
+		T head, struct cds_wfcq_tail *tail)
+{
+	return __cds_wfcq_first_blocking(cds_wfcq_head_cast_cpp(head), tail);
+}
+
+template<typename T> static inline struct cds_wfcq_node *__cds_wfcq_first_nonblocking(
+		T head, struct cds_wfcq_tail *tail)
+{
+	return __cds_wfcq_first_nonblocking(cds_wfcq_head_cast_cpp(head), tail);
+}
+
+template<typename T> static inline struct cds_wfcq_node *__cds_wfcq_next_blocking(
+		T head,
+		struct cds_wfcq_tail *tail,
+		struct cds_wfcq_node *node)
+{
+	return __cds_wfcq_next_blocking(cds_wfcq_head_cast_cpp(head), tail, node);
+}
+
+template<typename T> static inline struct cds_wfcq_node *__cds_wfcq_next_nonblocking(
+		T head,
+		struct cds_wfcq_tail *tail,
+		struct cds_wfcq_node *node)
+{
+	return __cds_wfcq_next_nonblocking(cds_wfcq_head_cast_cpp(head), tail, node);
+}
+
 #endif
 
 #endif /* _URCU_WFCQUEUE_H */

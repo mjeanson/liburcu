@@ -28,7 +28,6 @@
 #include <stdio.h>
 #include <pthread.h>
 #include <signal.h>
-#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
@@ -37,6 +36,7 @@
 #include <stdbool.h>
 #include <sys/mman.h>
 
+#include <urcu/assert.h>
 #include <urcu/config.h>
 #include <urcu/arch.h>
 #include <urcu/wfcqueue.h>
@@ -80,7 +80,7 @@ void *mremap_wrapper(void *old_address __attribute__((unused)),
 		size_t new_size __attribute__((unused)),
 		int flags)
 {
-	assert(!(flags & MREMAP_MAYMOVE));
+	urcu_posix_assert(!(flags & MREMAP_MAYMOVE));
 
 	return MAP_FAILED;
 }
@@ -120,7 +120,10 @@ enum membarrier_cmd {
 static
 void __attribute__((constructor)) _urcu_bp_init(void);
 static
-void __attribute__((destructor)) urcu_bp_exit(void);
+void urcu_bp_exit(void);
+static
+void __attribute__((destructor)) urcu_bp_exit_destructor(void);
+static void urcu_call_rcu_exit(void);
 
 #ifndef CONFIG_RCU_FORCE_SYS_MEMBARRIER
 int urcu_bp_has_sys_membarrier;
@@ -277,9 +280,9 @@ void urcu_bp_synchronize_rcu(void)
 	int ret;
 
 	ret = sigfillset(&newmask);
-	assert(!ret);
+	urcu_posix_assert(!ret);
 	ret = pthread_sigmask(SIG_BLOCK, &newmask, &oldmask);
-	assert(!ret);
+	urcu_posix_assert(!ret);
 
 	mutex_lock(&rcu_gp_lock);
 
@@ -296,7 +299,7 @@ void urcu_bp_synchronize_rcu(void)
 	/*
 	 * Wait for readers to observe original parity or be quiescent.
 	 * wait_for_readers() can release and grab again rcu_registry_lock
-	 * interally.
+	 * internally.
 	 */
 	wait_for_readers(&registry, &cur_snap_readers, &qsreaders);
 
@@ -327,7 +330,7 @@ void urcu_bp_synchronize_rcu(void)
 	/*
 	 * Wait for readers to observe new parity or be quiescent.
 	 * wait_for_readers() can release and grab again rcu_registry_lock
-	 * interally.
+	 * internally.
 	 */
 	wait_for_readers(&cur_snap_readers, NULL, &qsreaders);
 
@@ -345,7 +348,7 @@ out:
 	mutex_unlock(&rcu_registry_lock);
 	mutex_unlock(&rcu_gp_lock);
 	ret = pthread_sigmask(SIG_SETMASK, &oldmask, NULL);
-	assert(!ret);
+	urcu_posix_assert(!ret);
 }
 
 /*
@@ -383,7 +386,7 @@ void expand_arena(struct registry_arena *arena)
 
 	/* No chunk. */
 	if (cds_list_empty(&arena->chunk_list)) {
-		assert(ARENA_INIT_ALLOC >=
+		urcu_posix_assert(ARENA_INIT_ALLOC >=
 			sizeof(struct registry_chunk)
 			+ sizeof(struct rcu_reader));
 		new_chunk_len = ARENA_INIT_ALLOC;
@@ -413,7 +416,7 @@ void expand_arena(struct registry_arena *arena)
 		new_chunk_len, 0);
 	if (new_chunk != MAP_FAILED) {
 		/* Should not have moved. */
-		assert(new_chunk == last_chunk);
+		urcu_posix_assert(new_chunk == last_chunk);
 		memset((char *) last_chunk + old_chunk_len, 0,
 			new_chunk_len - old_chunk_len);
 		last_chunk->data_len =
@@ -484,7 +487,7 @@ void add_thread(void)
 
 	/* Add to registry */
 	rcu_reader_reg->tid = pthread_self();
-	assert(rcu_reader_reg->ctr == 0);
+	urcu_posix_assert(rcu_reader_reg->ctr == 0);
 	cds_list_add(&rcu_reader_reg->node, &registry);
 	/*
 	 * Reader threads are pointing to the reader registry. This is
@@ -673,6 +676,13 @@ void urcu_bp_exit(void)
 	mutex_unlock(&init_lock);
 }
 
+static
+void urcu_bp_exit_destructor(void)
+{
+	urcu_call_rcu_exit();
+	urcu_bp_exit();
+}
+
 /*
  * Holding the rcu_gp_lock and rcu_registry_lock across fork will make
  * sure we fork() don't race with a concurrent thread executing with
@@ -685,9 +695,9 @@ void urcu_bp_before_fork(void)
 	int ret;
 
 	ret = sigfillset(&newmask);
-	assert(!ret);
+	urcu_posix_assert(!ret);
 	ret = pthread_sigmask(SIG_BLOCK, &newmask, &oldmask);
-	assert(!ret);
+	urcu_posix_assert(!ret);
 	mutex_lock(&rcu_gp_lock);
 	mutex_lock(&rcu_registry_lock);
 	saved_fork_signal_mask = oldmask;
@@ -702,7 +712,7 @@ void urcu_bp_after_fork_parent(void)
 	mutex_unlock(&rcu_registry_lock);
 	mutex_unlock(&rcu_gp_lock);
 	ret = pthread_sigmask(SIG_SETMASK, &oldmask, NULL);
-	assert(!ret);
+	urcu_posix_assert(!ret);
 }
 
 /*
@@ -738,7 +748,7 @@ void urcu_bp_after_fork_child(void)
 	mutex_unlock(&rcu_registry_lock);
 	mutex_unlock(&rcu_gp_lock);
 	ret = pthread_sigmask(SIG_SETMASK, &oldmask, NULL);
-	assert(!ret);
+	urcu_posix_assert(!ret);
 }
 
 void *urcu_bp_dereference_sym(void *p)
@@ -769,3 +779,4 @@ DEFINE_RCU_FLAVOR(rcu_flavor);
 
 #include "urcu-call-rcu-impl.h"
 #include "urcu-defer-impl.h"
+#include "urcu-poll-impl.h"
