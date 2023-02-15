@@ -2,7 +2,7 @@ Add sh4 to the list of supported architectures.
 
 --- a/include/urcu/arch.h
 +++ b/include/urcu/arch.h
-@@ -157,6 +157,11 @@
+@@ -167,6 +167,11 @@
  #define URCU_ARCH_RISCV 1
  #include <urcu/arch/riscv.h>
  
@@ -133,8 +133,8 @@ Add sh4 to the list of supported architectures.
 +	urcu/arch/superh.h \
  	urcu/arch/tile.h \
  	urcu/arch/x86.h \
- 	urcu/call-rcu.h \
-@@ -74,6 +75,7 @@
+ 	urcu/assert.h \
+@@ -75,6 +76,7 @@
  	urcu/uatomic/riscv.h \
  	urcu/uatomic/s390.h \
  	urcu/uatomic/sparc64.h \

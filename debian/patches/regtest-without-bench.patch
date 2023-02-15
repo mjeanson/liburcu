@@ -2,7 +2,7 @@ Remove the benchmarks from the regtest target, they timeout on the buildds.
 
 --- a/tests/benchmark/Makefile.am
 +++ b/tests/benchmark/Makefile.am
-@@ -232,7 +232,7 @@
+@@ -235,7 +235,7 @@
  		done; \
  	fi
  
@@ -11,7 +11,7 @@ Remove the benchmarks from the regtest target, they timeout on the buildds.
  
  # This empty variable is required to enable the TAP test suite for custom
  # targets like 'regtest' while keeping the default 'check' a noop.
-@@ -247,6 +247,3 @@
+@@ -250,6 +250,3 @@
  
  long_bench:
  	$(MAKE) $(AM_MAKEFLAGS) check TESTS="$(LONG_BENCH_TESTS)"
