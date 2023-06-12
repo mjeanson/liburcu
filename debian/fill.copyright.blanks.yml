@@ -1,0 +1,33 @@
+---
+include/urcu/map/:
+  override-license: LGPL-2.1+
+include/urcu/static/:
+  override-license: LGPL-2.1+
+include/urcu/urcu-qsbr.h:
+  override-license: LGPL-2.1+
+include/urcu/pointer.h:
+  override-license: LGPL-2.1+
+include/urcu/urcu-bp.h:
+  override-license: LGPL-2.1+
+include/urcu/urcu-mb.h:
+  override-license: LGPL-2.1+
+include/urcu/urcu-memb.h:
+  override-license: LGPL-2.1+
+include/urcu/urcu-signal.h:
+  override-license: LGPL-2.1+
+include/urcu/urcu.h:
+  override-license: LGPL-2.1+
+src/urcu-bp.c:
+  override-license: LGPL-2.1+
+src/urcu-defer-impl.h:
+  override-license: LGPL-2.1+
+src/urcu-pointer.c:
+  override-license: LGPL-2.1+
+src/urcu-qsbr.c:
+  override-license: LGPL-2.1+
+src/urcu.c:
+  override-license: LGPL-2.1+
+tests/common/debug-yield.c:
+  override-license: LGPL-2.1+
+tests/common/debug-yield.h:
+  override-license: LGPL-2.1+
