@@ -1,3 +1,12 @@
+liburcu (0.14.0-1) unstable; urgency=medium
+
+  * [b470d6b] New upstream version 0.14.0 (Closes: #1032717)
+  * [34a5016] Refresh patches for 0.14.0
+  * [25af42b] Update symbols for 0.14.0
+  * [ba4f49b] Update debian/copyright
+
+ -- Michael Jeanson <mjeanson@debian.org>  Mon, 12 Jun 2023 15:59:15 -0400
+
 liburcu (0.13.2-1) unstable; urgency=medium
 
   * [05fc1d0] New upstream version 0.13.2
