@@ -81,6 +81,10 @@ struct call_rcu_completion_work {
 	struct call_rcu_completion *completion;
 };
 
+enum crdf_flags {
+	CRDF_FLAG_JOIN_THREAD = (1 << 0),
+};
+
 /*
  * List of all call_rcu_data structures to keep valgrind happy.
  * Protected by call_rcu_mutex.
@@ -102,7 +106,6 @@ static pthread_mutex_t call_rcu_mutex = PTHREAD_MUTEX_INITIALIZER;
 static struct call_rcu_data *default_call_rcu_data;
 
 static struct urcu_atfork *registered_rculfhash_atfork;
-static unsigned long registered_rculfhash_atfork_refcount;
 
 /*
  * If the sched_getcpu() and sysconf(_SC_NPROCESSORS_CONF) calls are
@@ -446,8 +449,8 @@ static void call_rcu_data_init(struct call_rcu_data **crdpp,
 	cds_list_add(&crdp->list, &call_rcu_data_list);
 	crdp->cpu_affinity = cpu_affinity;
 	crdp->gp_count = 0;
-	cmm_smp_mb();  /* Structure initialized before pointer is planted. */
-	*crdpp = crdp;
+	rcu_set_pointer(crdpp, crdp);
+
 	ret = pthread_create(&crdp->tid, NULL, call_rcu_thread, crdp);
 	if (ret)
 		urcu_die(ret);
@@ -562,22 +565,27 @@ int set_cpu_call_rcu_data(int cpu, struct call_rcu_data *crdp)
 
 /*
  * Return a pointer to the default call_rcu_data structure, creating
- * one if need be.  Because we never free call_rcu_data structures,
- * we don't need to be in an RCU read-side critical section.
+ * one if need be.
+ *
+ * The call to this function with intent to use the returned
+ * call_rcu_data should be protected by RCU read-side lock.
  */
 
 struct call_rcu_data *get_default_call_rcu_data(void)
 {
-	if (default_call_rcu_data != NULL)
-		return rcu_dereference(default_call_rcu_data);
+	struct call_rcu_data *crdp;
+
+	crdp = rcu_dereference(default_call_rcu_data);
+	if (crdp != NULL)
+		return crdp;
+
 	call_rcu_lock(&call_rcu_mutex);
-	if (default_call_rcu_data != NULL) {
-		call_rcu_unlock(&call_rcu_mutex);
-		return default_call_rcu_data;
-	}
-	call_rcu_data_init(&default_call_rcu_data, 0, -1);
+	if (default_call_rcu_data == NULL)
+		call_rcu_data_init(&default_call_rcu_data, 0, -1);
+	crdp = default_call_rcu_data;
 	call_rcu_unlock(&call_rcu_mutex);
-	return default_call_rcu_data;
+
+	return crdp;
 }
 
 /*
@@ -756,7 +764,8 @@ void call_rcu(struct rcu_head *head,
  * a list corruption bug in the 0.7.x series. The equivalent fix
  * appeared in 0.6.8 for the stable-0.6 branch.
  */
-void call_rcu_data_free(struct call_rcu_data *crdp)
+static
+void _call_rcu_data_free(struct call_rcu_data *crdp, unsigned int flags)
 {
 	if (crdp == NULL || crdp == default_call_rcu_data) {
 		return;
@@ -785,7 +794,19 @@ void call_rcu_data_free(struct call_rcu_data *crdp)
 	cds_list_del(&crdp->list);
 	call_rcu_unlock(&call_rcu_mutex);
 
+	if (flags & CRDF_FLAG_JOIN_THREAD) {
+		int ret;
+
+		ret = pthread_join(get_call_rcu_thread(crdp), NULL);
+		if (ret)
+			urcu_die(ret);
+	}
 	free(crdp);
+}
+
+void call_rcu_data_free(struct call_rcu_data *crdp)
+{
+	_call_rcu_data_free(crdp, CRDF_FLAG_JOIN_THREAD);
 }
 
 /*
@@ -1012,26 +1033,85 @@ void call_rcu_after_fork_child(void)
 		if (crdp == default_call_rcu_data)
 			continue;
 		uatomic_set(&crdp->flags, URCU_CALL_RCU_STOPPED);
-		call_rcu_data_free(crdp);
+		/*
+		 * Do not join the thread because it does not exist in
+		 * the child.
+		 */
+		_call_rcu_data_free(crdp, 0);
 	}
 }
 
 void urcu_register_rculfhash_atfork(struct urcu_atfork *atfork)
 {
+	if (CMM_LOAD_SHARED(registered_rculfhash_atfork))
+		return;
 	call_rcu_lock(&call_rcu_mutex);
-	if (registered_rculfhash_atfork_refcount++)
-		goto end;
-	registered_rculfhash_atfork = atfork;
-end:
+	if (!registered_rculfhash_atfork)
+		registered_rculfhash_atfork = atfork;
 	call_rcu_unlock(&call_rcu_mutex);
 }
 
+/*
+ * This unregistration function is deprecated, meant only for internal
+ * use by rculfhash.
+ */
+__attribute__((noreturn))
 void urcu_unregister_rculfhash_atfork(struct urcu_atfork *atfork __attribute__((unused)))
 {
+	urcu_die(EPERM);
+}
+
+/*
+ * Teardown the default call_rcu worker thread if there are no queued
+ * callbacks on process exit. This prevents leaking memory.
+ *
+ * Here is how an application can ensure graceful teardown of this
+ * worker thread:
+ *
+ * - An application queuing call_rcu callbacks should invoke
+ *   rcu_barrier() before it exits.
+ * - When chaining call_rcu callbacks, the number of calls to
+ *   rcu_barrier() on application exit must match at least the maximum
+ *   number of chained callbacks.
+ * - If an application chains callbacks endlessly, it would have to be
+ *   modified to stop chaining callbacks when it detects an application
+ *   exit (e.g. with a flag), and wait for quiescence with rcu_barrier()
+ *   after setting that flag.
+ * - The statements above apply to a library which queues call_rcu
+ *   callbacks, only it needs to invoke rcu_barrier in its library
+ *   destructor.
+ *
+ * Note that this function does not presume it is being called when the
+ * application is single-threaded even though this is invoked from a
+ * destructor: this function synchronizes against concurrent calls to
+ * get_default_call_rcu_data().
+ */
+static void urcu_call_rcu_exit(void)
+{
+	struct call_rcu_data *crdp;
+	bool teardown = true;
+
+	if (default_call_rcu_data == NULL)
+		return;
 	call_rcu_lock(&call_rcu_mutex);
-	if (--registered_rculfhash_atfork_refcount)
-		goto end;
-	registered_rculfhash_atfork = NULL;
-end:
+	/*
+	 * If the application leaves callbacks in the default call_rcu
+	 * worker queue, keep the default worker in place.
+	 */
+	crdp = default_call_rcu_data;
+	if (!crdp) {
+		teardown = false;
+		goto unlock;
+	}
+	if (!cds_wfcq_empty(&crdp->cbs_head, &crdp->cbs_tail)) {
+		teardown = false;
+		goto unlock;
+	}
+	rcu_set_pointer(&default_call_rcu_data, NULL);
+unlock:
 	call_rcu_unlock(&call_rcu_mutex);
+	if (teardown) {
+		synchronize_rcu();
+		call_rcu_data_free(crdp);
+	}
 }
