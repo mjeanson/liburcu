@@ -1,3 +1,10 @@
+liburcu (0.13.3-1~ubuntu18.04.1) bionic; urgency=medium
+
+  * [6ab87ed] New upstream version 0.13.3
+  * [44e16a5] Set config for stable-0.13
+
+ -- Michael Jeanson <mjeanson@debian.org>  Thu, 15 Jun 2023 14:01:58 -0400
+
 liburcu (0.13.2-1~ubuntu18.04.1) bionic; urgency=medium
 
   * [05fc1d0] New upstream version 0.13.2
