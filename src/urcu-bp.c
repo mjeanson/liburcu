@@ -120,7 +120,10 @@ enum membarrier_cmd {
 static
 void __attribute__((constructor)) _urcu_bp_init(void);
 static
-void __attribute__((destructor)) urcu_bp_exit(void);
+void urcu_bp_exit(void);
+static
+void __attribute__((destructor)) urcu_bp_exit_destructor(void);
+static void urcu_call_rcu_exit(void);
 
 #ifndef CONFIG_RCU_FORCE_SYS_MEMBARRIER
 int urcu_bp_has_sys_membarrier;
@@ -671,6 +674,13 @@ void urcu_bp_exit(void)
 			abort();
 	}
 	mutex_unlock(&init_lock);
+}
+
+static
+void urcu_bp_exit_destructor(void)
+{
+	urcu_call_rcu_exit();
+	urcu_bp_exit();
 }
 
 /*
