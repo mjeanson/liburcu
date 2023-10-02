@@ -31,4 +31,10 @@ override_dh_makeshlibs:
 	dh_makeshlibs -V --add-udeb=liburcu8-udeb
 
 override_dh_auto_test:
-	dh_auto_test -- regtest
+	dh_auto_test
+	$(MAKE) regtest
+
+override_dh_auto_clean:
+	dh_auto_clean
+	find tests/regression -name '*.log' -delete
+	find tests/regression -name '*.trs' -delete
