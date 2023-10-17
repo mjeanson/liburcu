@@ -1,3 +1,9 @@
+liburcu (0.14.0-2) unstable; urgency=medium
+
+  * [a4d60f0] Clean regtest log files (Closes: #1047046)
+
+ -- Michael Jeanson <mjeanson@debian.org>  Tue, 17 Oct 2023 16:17:36 -0400
+
 liburcu (0.14.0-1) unstable; urgency=medium
 
   * [b470d6b] New upstream version 0.14.0 (Closes: #1032717)
