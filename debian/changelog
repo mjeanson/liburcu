@@ -1,3 +1,10 @@
+liburcu (0.14.0-3) unstable; urgency=medium
+
+  * [d3fc511] Enable loong64 architecture (Closes: #1052595)
+  * [86c5dc4] Check DEB_BUILD_OPTIONS in dh_auto_test override
+
+ -- Michael Jeanson <mjeanson@debian.org>  Mon, 15 Jan 2024 16:55:05 -0500
+
 liburcu (0.14.0-2) unstable; urgency=medium
 
   * [a4d60f0] Clean regtest log files (Closes: #1047046)
