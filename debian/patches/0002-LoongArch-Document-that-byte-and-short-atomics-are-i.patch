@@ -1,0 +1,45 @@
+From df8a9108cb82436342ea72dda69a05baab1f5427 Mon Sep 17 00:00:00 2001
+From: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+Date: Wed, 6 Sep 2023 09:25:22 -0400
+Subject: [PATCH 2/6] LoongArch: Document that byte and short atomics are
+ implemented with LL/SC
+
+Based on the LoongArch Reference Manual:
+
+https://loongson.github.io/LoongArch-Documentation/LoongArch-Vol1-EN.html
+
+Section 2.2.7 "Atomic Memory Access Instructions" only lists atomic
+operations for 32-bit and 64-bit integers. As detailed in Section
+2.2.7.1, LL/SC instructions operating on 32-bit and 64-bit integers are
+also available. Those are used by the compiler to support atomics on
+byte and short types.
+
+This means atomics on 32-bit and 64-bit types have stronger forward
+progress guarantees than those operating on 8-bit and 16-bit types.
+
+Link: https://github.com/urcu/userspace-rcu/pull/11#issuecomment-1706528796
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+Change-Id: I01569b718f7300a46d984c34065c0bbfbd2f7cc6
+---
+ include/urcu/uatomic/loongarch.h | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/include/urcu/uatomic/loongarch.h b/include/urcu/uatomic/loongarch.h
+index f41302a..dcf9e93 100644
+--- a/include/urcu/uatomic/loongarch.h
++++ b/include/urcu/uatomic/loongarch.h
+@@ -32,6 +32,11 @@
+ extern "C" {
+ #endif
+ 
++/*
++ * LoongArch implements byte and short atomics with LL/SC instructions,
++ * which retry if the cache line is modified concurrently between LL and
++ * SC.
++ */
+ #define UATOMIC_HAS_ATOMIC_BYTE
+ #define UATOMIC_HAS_ATOMIC_SHORT
+ 
+-- 
+2.43.0
+
