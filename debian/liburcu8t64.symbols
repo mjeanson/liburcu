@@ -1,4 +1,4 @@
-liburcu-bp.so.8 liburcu8 #MINVER#
+liburcu-bp.so.8 liburcu8t64 #MINVER#
 * Build-Depends-Package: liburcu-dev
  (arch=m68k,riscv64)__tls_access_urcu_bp_reader@Base 0.13.0-1
  __urcu_compat_futex_cond@Base 0.13.0
@@ -52,7 +52,7 @@ liburcu-bp.so.8 liburcu8 #MINVER#
  urcu_bp_synchronize_rcu@Base 0.13.0
  urcu_bp_unregister_rculfhash_atfork@Base 0.13.0
  urcu_bp_xchg_pointer_sym@Base 0.13.0
-liburcu-cds.so.8 liburcu8 #MINVER#
+liburcu-cds.so.8 liburcu8t64 #MINVER#
 * Build-Depends-Package: liburcu-dev
  __cds_lfs_init@Base 0.13.0
  __cds_lfs_pop@Base 0.13.0
@@ -110,7 +110,7 @@ liburcu-cds.so.8 liburcu8 #MINVER#
  urcu_workqueue_queue_work@Base 0.13.0
  urcu_workqueue_resume_worker@Base 0.13.0
  urcu_workqueue_wait_completion@Base 0.13.0
-liburcu-common.so.8 liburcu8 #MINVER#
+liburcu-common.so.8 liburcu8t64 #MINVER#
 * Build-Depends-Package: liburcu-dev
  __cds_wfcq_dequeue_blocking@Base 0.13.0
  __cds_wfcq_dequeue_nonblocking@Base 0.13.0
@@ -162,7 +162,7 @@ liburcu-common.so.8 liburcu8 #MINVER#
  cds_wfs_push@Base 0.13.0
  compat_futex_async@Base 0.13.0
  compat_futex_noasync@Base 0.13.0
-liburcu-mb.so.8 liburcu8 #MINVER#
+liburcu-mb.so.8 liburcu8t64 #MINVER#
 * Build-Depends-Package: liburcu-dev
  (arch=m68k,riscv64)__tls_access_urcu_mb_reader@Base 0.13.0-1
  __urcu_compat_futex_cond@Base 0.13.0
@@ -210,7 +210,7 @@ liburcu-mb.so.8 liburcu8 #MINVER#
  urcu_mb_synchronize_rcu@Base 0.13.0
  urcu_mb_unregister_rculfhash_atfork@Base 0.13.0
  urcu_mb_unregister_thread@Base 0.13.0
-liburcu-memb.so.8 liburcu8 #MINVER#
+liburcu-memb.so.8 liburcu8t64 #MINVER#
 * Build-Depends-Package: liburcu-dev
  (arch=m68k,riscv64)__tls_access_urcu_memb_reader@Base 0.13.0-1
  __urcu_compat_futex_cond@Base 0.13.0
@@ -259,7 +259,7 @@ liburcu-memb.so.8 liburcu8 #MINVER#
  urcu_memb_synchronize_rcu@Base 0.13.0
  urcu_memb_unregister_rculfhash_atfork@Base 0.13.0
  urcu_memb_unregister_thread@Base 0.13.0
-liburcu-qsbr.so.8 liburcu8 #MINVER#
+liburcu-qsbr.so.8 liburcu8t64 #MINVER#
 * Build-Depends-Package: liburcu-dev
  (arch=m68k,riscv64)__tls_access_urcu_qsbr_reader@Base 0.13.0-1
  __urcu_compat_futex_cond@Base 0.13.0
@@ -309,7 +309,7 @@ liburcu-qsbr.so.8 liburcu8 #MINVER#
  urcu_qsbr_thread_online@Base 0.13.0
  urcu_qsbr_unregister_rculfhash_atfork@Base 0.13.0
  urcu_qsbr_unregister_thread@Base 0.13.0
-liburcu-signal.so.8 liburcu8 #MINVER#
+liburcu-signal.so.8 liburcu8t64 #MINVER#
 * Build-Depends-Package: liburcu-dev
  (arch=m68k,riscv64)__tls_access_urcu_signal_reader@Base 0.13.0-1
  __urcu_compat_futex_cond@Base 0.13.0
@@ -357,7 +357,7 @@ liburcu-signal.so.8 liburcu8 #MINVER#
  urcu_signal_synchronize_rcu@Base 0.13.0
  urcu_signal_unregister_rculfhash_atfork@Base 0.13.0
  urcu_signal_unregister_thread@Base 0.13.0
-liburcu.so.8 liburcu8 #MINVER#
+liburcu.so.8 liburcu8t64 #MINVER#
 * Build-Depends-Package: liburcu-dev
  (arch=m68k,riscv64)__tls_access_urcu_memb_reader@Base 0.13.0-1
  __urcu_compat_futex_cond@Base 0.13.0
@@ -406,7 +406,7 @@ liburcu.so.8 liburcu8 #MINVER#
  urcu_memb_synchronize_rcu@Base 0.13.0
  urcu_memb_unregister_rculfhash_atfork@Base 0.13.0
  urcu_memb_unregister_thread@Base 0.13.0
-liburcu-bp.so.8 liburcu8 #MINVER#
+liburcu-bp.so.8 liburcu8t64 #MINVER#
 * Build-Depends-Package: liburcu-dev
  __urcu_compat_futex_cond@Base 0.13.0
  __urcu_compat_futex_lock@Base 0.13.0
@@ -457,7 +457,7 @@ liburcu-bp.so.8 liburcu8 #MINVER#
  urcu_bp_synchronize_rcu@Base 0.13.0
  urcu_bp_unregister_rculfhash_atfork@Base 0.13.0
  urcu_bp_xchg_pointer_sym@Base 0.13.0
-liburcu-cds.so.8 liburcu8 #MINVER#
+liburcu-cds.so.8 liburcu8t64 #MINVER#
 * Build-Depends-Package: liburcu-dev
  __cds_lfs_init@Base 0.13.0
  __cds_lfs_pop@Base 0.13.0
@@ -514,7 +514,7 @@ liburcu-cds.so.8 liburcu8 #MINVER#
  urcu_workqueue_queue_work@Base 0.13.0
  urcu_workqueue_resume_worker@Base 0.13.0
  urcu_workqueue_wait_completion@Base 0.13.0
-liburcu-common.so.8 liburcu8 #MINVER#
+liburcu-common.so.8 liburcu8t64 #MINVER#
 * Build-Depends-Package: liburcu-dev
  __cds_wfcq_dequeue_blocking@Base 0.13.0
  __cds_wfcq_dequeue_nonblocking@Base 0.13.0
@@ -566,7 +566,7 @@ liburcu-common.so.8 liburcu8 #MINVER#
  cds_wfs_push@Base 0.13.0
  compat_futex_async@Base 0.13.0
  compat_futex_noasync@Base 0.13.0
-liburcu-mb.so.8 liburcu8 #MINVER#
+liburcu-mb.so.8 liburcu8t64 #MINVER#
 * Build-Depends-Package: liburcu-dev
  __urcu_compat_futex_cond@Base 0.13.0
  __urcu_compat_futex_lock@Base 0.13.0
@@ -610,7 +610,7 @@ liburcu-mb.so.8 liburcu8 #MINVER#
  urcu_mb_synchronize_rcu@Base 0.13.0
  urcu_mb_unregister_rculfhash_atfork@Base 0.13.0
  urcu_mb_unregister_thread@Base 0.13.0
-liburcu-memb.so.8 liburcu8 #MINVER#
+liburcu-memb.so.8 liburcu8t64 #MINVER#
 * Build-Depends-Package: liburcu-dev
  __urcu_compat_futex_cond@Base 0.13.0
  __urcu_compat_futex_lock@Base 0.13.0
@@ -655,7 +655,7 @@ liburcu-memb.so.8 liburcu8 #MINVER#
  urcu_memb_synchronize_rcu@Base 0.13.0
  urcu_memb_unregister_rculfhash_atfork@Base 0.13.0
  urcu_memb_unregister_thread@Base 0.13.0
-liburcu-qsbr.so.8 liburcu8 #MINVER#
+liburcu-qsbr.so.8 liburcu8t64 #MINVER#
 * Build-Depends-Package: liburcu-dev
  __urcu_compat_futex_cond@Base 0.13.0
  __urcu_compat_futex_lock@Base 0.13.0
@@ -702,7 +702,7 @@ liburcu-qsbr.so.8 liburcu8 #MINVER#
  urcu_qsbr_thread_online@Base 0.13.0
  urcu_qsbr_unregister_rculfhash_atfork@Base 0.13.0
  urcu_qsbr_unregister_thread@Base 0.13.0
-liburcu-signal.so.8 liburcu8 #MINVER#
+liburcu-signal.so.8 liburcu8t64 #MINVER#
 * Build-Depends-Package: liburcu-dev
  __urcu_compat_futex_cond@Base 0.13.0
  __urcu_compat_futex_lock@Base 0.13.0
@@ -747,7 +747,7 @@ liburcu-signal.so.8 liburcu8 #MINVER#
  urcu_signal_synchronize_rcu@Base 0.13.0
  urcu_signal_unregister_rculfhash_atfork@Base 0.13.0
  urcu_signal_unregister_thread@Base 0.13.0
-liburcu.so.8 liburcu8 #MINVER#
+liburcu.so.8 liburcu8t64 #MINVER#
 * Build-Depends-Package: liburcu-dev
  __urcu_compat_futex_cond@Base 0.13.0
  __urcu_compat_futex_lock@Base 0.13.0

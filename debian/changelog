@@ -1,3 +1,10 @@
+liburcu (0.14.0-3.1) unstable; urgency=medium
+
+  * Non-maintainer upload.
+  * Rename libraries for 64-bit time_t transition.  Closes: #1062691
+
+ -- Graham Inggs <ginggs@debian.org>  Wed, 28 Feb 2024 20:56:09 +0000
+
 liburcu (0.14.0-3) unstable; urgency=medium
 
   * [d3fc511] Enable loong64 architecture (Closes: #1052595)

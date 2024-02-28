@@ -2,7 +2,7 @@ Source: liburcu
 Priority: optional
 Maintainer: Jon Bernard <jbernard@debian.org>
 Uploaders: Michael Jeanson <mjeanson@debian.org>
-Build-Depends: debhelper-compat (= 12)
+Build-Depends: dpkg-dev (>= 1.22.5), debhelper-compat (= 12)
 Standards-Version: 4.6.1.0
 Rules-Requires-Root: no
 Section: libs
@@ -14,7 +14,7 @@ Package: liburcu-dev
 Section: libdevel
 Architecture: any
 Multi-Arch: same
-Depends: ${misc:Depends}, liburcu8 (= ${binary:Version})
+Depends: ${misc:Depends}, liburcu8t64 (= ${binary:Version})
 Description: userspace RCU (read-copy-update) library - development files
  This data synchronization library provides read-side access which scales
  linearly with the number of cores. It does so by allowing multiples copies of
@@ -25,7 +25,10 @@ Description: userspace RCU (read-copy-update) library - development files
  Install this package if you wish to develop your own programs using the
  userspace RCU library.
 
-Package: liburcu8
+Package: liburcu8t64
+Provides: ${t64:Provides}
+Replaces: liburcu8
+Breaks: liburcu8 (<< ${source:Version})
 Architecture: any
 Multi-Arch: same
 Pre-Depends: ${misc:Pre-Depends}
