@@ -1,1 +1,1 @@
-liburcu8t64: package-name-doesnt-match-sonames liburcu8
+liburcu8t64: package-name-doesnt-match-sonames liburcu-bp8 liburcu-cds8 liburcu-common8 liburcu-mb8 liburcu-memb8 liburcu-qsbr8 liburcu-signal8 liburcu8
