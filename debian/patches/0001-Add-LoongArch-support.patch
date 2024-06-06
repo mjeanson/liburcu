@@ -1,7 +1,7 @@
-From 7ec50625a74c3bd45ffd5e3020527618601b6198 Mon Sep 17 00:00:00 2001
+From dc46a9c324ae94d89da41ea9a3f97503115df88e Mon Sep 17 00:00:00 2001
 From: Wang Jing <wangjing@loongson.cn>
 Date: Tue, 8 Jun 2021 19:44:49 +0800
-Subject: [PATCH 1/6] Add LoongArch support
+Subject: Add LoongArch support
 
 This commit completes LoongArch support.
 
@@ -171,3 +171,14 @@ Change-Id: I335e654939bfc90994275f2a4fad550c95f3eba4
 +#include <urcu/uatomic/generic.h>
 +
 +#endif /* _URCU_UATOMIC_ARCH_LOONGARCH_H */
+--- a/include/urcu/uatomic.h
++++ b/include/urcu/uatomic.h
+@@ -51,6 +51,8 @@
+ #include <urcu/uatomic/m68k.h>
+ #elif defined(URCU_ARCH_RISCV)
+ #include <urcu/uatomic/riscv.h>
++#elif defined(URCU_ARCH_LOONGARCH)
++#include <urcu/uatomic/loongarch.h>
+ #elif defined(URCU_ARCH_SUPERH)
+ #include <urcu/uatomic/superh.h>
+ #else
