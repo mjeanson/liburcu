@@ -1,3 +1,11 @@
+liburcu (0.14.0-4) unstable; urgency=medium
+
+  * [306f492] Fix missing hunk in Loongarch support patch (Closes: #1072676)
+    Thanks to Dandan Zhang <zhangdandan@loongson.cn>
+  * [32a087b] Fix liburcu8t64 lintian override
+
+ -- Michael Jeanson <mjeanson@debian.org>  Thu, 06 Jun 2024 11:57:16 -0400
+
 liburcu (0.14.0-3.1) unstable; urgency=medium
 
   * Non-maintainer upload.
