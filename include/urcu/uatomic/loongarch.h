@@ -1,7 +1,10 @@
+#ifndef _URCU_UATOMIC_ARCH_LOONGARCH_H
+#define _URCU_UATOMIC_ARCH_LOONGARCH_H
+
 /*
- * Atomic exchange operations for the RISC-V architecture. Let GCC do it.
+ * Atomic exchange operations for the LoongArch architecture. Let GCC do it.
  *
- * Copyright (c) 2018 Michael Jeanson <mjeanson@efficios.com>
+ * Copyright (c) 2021 Wang Jing <wangjing@loongson.cn>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -22,33 +25,18 @@
  * IN THE SOFTWARE.
  */
 
-#ifndef _URCU_ARCH_UATOMIC_RISCV_H
-#define _URCU_ARCH_UATOMIC_RISCV_H
-
 #include <urcu/compiler.h>
 #include <urcu/system.h>
-
-/*
- * See <https://gcc.gnu.org/bugzilla/show_bug.cgi?id=104831> for details.
- *
- * The following GCC patches are required to have a working Userspace RCU on
- * the RISC-V architecture. The were introduced in GCC 14 and backported to
- * 13.3.0.
- *
- *  - <https://gcc.gnu.org/git/?p=gcc.git;a=commit;h=dcd7b2f5f7233a04c8b14b362d0befa76e9654c0>
- *  - <https://gcc.gnu.org/git/?p=gcc.git;a=commit;h=4990cf84c460f064d6281d0813f20b0ef20c7448>
- *  - <https://gcc.gnu.org/git/?p=gcc.git;a=commit;h=d199d2e56da2379004e7e0457150409c0c99d3e6>
- */
-#ifdef URCU_GCC_VERSION
-# if (URCU_GCC_VERSION < 130300)
-#  error "Implementations of some atomic operations of GCC < 13.3.0 for RISC-V are insufficient for sequential consistency. For this reason Userspace RCU is currently marked as 'broken' for RISC-V on these GCC versions."
-# endif
-#endif
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+/*
+ * LoongArch implements byte and short atomics with LL/SC instructions,
+ * which retry if the cache line is modified concurrently between LL and
+ * SC.
+ */
 #define UATOMIC_HAS_ATOMIC_BYTE
 #define UATOMIC_HAS_ATOMIC_SHORT
 
@@ -58,4 +46,4 @@ extern "C" {
 
 #include <urcu/uatomic/generic.h>
 
-#endif /* _URCU_ARCH_UATOMIC_RISCV_H */
+#endif /* _URCU_UATOMIC_ARCH_LOONGARCH_H */

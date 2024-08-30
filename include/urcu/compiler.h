@@ -74,6 +74,23 @@
 		(type *)((char *)__ptr - offsetof(type, member));	\
 	})
 
+/*
+ * caa_container_of_check_null - Get the address of an object containing a field.
+ *
+ * @ptr: pointer to the field.
+ * @type: type of the object.
+ * @member: name of the field within the object.
+ *
+ * Return the address of the object containing the field. Return NULL if
+ * @ptr is NULL.
+ */
+#define caa_container_of_check_null(ptr, type, member)			\
+	__extension__							\
+	({								\
+		const __typeof__(((type *) NULL)->member) * __ptr = (ptr); \
+		(__ptr) ? (type *)((char *)__ptr - offsetof(type, member)) : NULL; \
+	})
+
 #define CAA_BUILD_BUG_ON_ZERO(cond) (sizeof(struct { int:-!!(cond); }))
 #define CAA_BUILD_BUG_ON(cond) ((void)CAA_BUILD_BUG_ON_ZERO(cond))
 
@@ -86,7 +103,7 @@
 #define __rcu
 
 #ifdef __cplusplus
-#define URCU_FORCE_CAST(_type, arg)	(reinterpret_cast<std::remove_cv<_type>::type>(arg))
+#define URCU_FORCE_CAST(_type, arg)	(reinterpret_cast<typename std::remove_cv<_type>::type>(arg))
 #else
 #define URCU_FORCE_CAST(type, arg)	((type) (arg))
 #endif
