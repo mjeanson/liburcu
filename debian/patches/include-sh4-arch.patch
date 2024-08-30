@@ -2,9 +2,9 @@ Add sh4 to the list of supported architectures.
 
 --- a/include/urcu/arch.h
 +++ b/include/urcu/arch.h
-@@ -167,6 +167,11 @@
- #define URCU_ARCH_RISCV 1
- #include <urcu/arch/riscv.h>
+@@ -173,6 +173,11 @@
+ #define URCU_ARCH_LOONGARCH 1
+ #include <urcu/arch/loongarch.h>
  
 +#elif defined(__sh__)
 +
@@ -68,10 +68,10 @@ Add sh4 to the list of supported architectures.
 +#endif /* _URCU_ARCH_SUPERH_H */
 --- a/include/urcu/uatomic.h
 +++ b/include/urcu/uatomic.h
-@@ -51,6 +51,8 @@
- #include <urcu/uatomic/m68k.h>
- #elif defined(URCU_ARCH_RISCV)
+@@ -53,6 +53,8 @@
  #include <urcu/uatomic/riscv.h>
+ #elif defined(URCU_ARCH_LOONGARCH)
+ #include <urcu/uatomic/loongarch.h>
 +#elif defined(URCU_ARCH_SUPERH)
 +#include <urcu/uatomic/superh.h>
  #else
@@ -126,7 +126,7 @@ Add sh4 to the list of supported architectures.
 +#endif /* _URCU_ARCH_UATOMIC_SUPERH_H */
 --- a/include/Makefile.am
 +++ b/include/Makefile.am
-@@ -14,6 +14,7 @@
+@@ -15,6 +15,7 @@
  	urcu/arch/riscv.h \
  	urcu/arch/s390.h \
  	urcu/arch/sparc64.h \
@@ -134,7 +134,7 @@ Add sh4 to the list of supported architectures.
  	urcu/arch/tile.h \
  	urcu/arch/x86.h \
  	urcu/assert.h \
-@@ -75,6 +76,7 @@
+@@ -77,6 +78,7 @@
  	urcu/uatomic/riscv.h \
  	urcu/uatomic/s390.h \
  	urcu/uatomic/sparc64.h \
