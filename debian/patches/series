@@ -1,4 +1,2 @@
 include-sh4-arch.patch
 regtest-without-bench.patch
-0001-Add-LoongArch-support.patch
-0002-LoongArch-Document-that-byte-and-short-atomics-are-i.patch
